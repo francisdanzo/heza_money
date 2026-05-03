@@ -1,0 +1,71 @@
+name: heza_money
+description: "Heza Money — Feel good about your money. Gestion financière pour jeunes professionnels burundais."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Navigation
+  go_router: ^14.6.3
+
+  # Gestion d'état
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Base de données locale Drift (SQLite) — 100% offline
+  drift: ^2.22.1
+  sqlite3_flutter_libs: ^0.5.28
+  path_provider: ^2.1.5
+  path: ^1.9.1
+
+  # Graphiques
+  fl_chart: ^0.69.0
+
+  # Google Fonts — Inter
+  google_fonts: ^6.2.1
+
+  # Notifications locales
+  flutter_local_notifications: ^18.0.1
+
+  # Export PDF
+  pdf: ^3.11.3
+  printing: ^5.14.1
+
+  # Icônes et utilitaires
+  cupertino_icons: ^1.0.8
+  intl: ^0.19.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+  # Générateur de code Drift
+  drift_dev: ^2.22.1
+  build_runner: ^2.4.13
+  riverpod_generator: ^2.6.1
+
+flutter:
+  uses-material-design: true
+
+  # Polices locales (Inter via google_fonts — cache offline)
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Inter-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Inter-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700
+
+  assets:
+    - assets/fonts/
