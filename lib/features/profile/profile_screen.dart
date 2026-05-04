@@ -6,6 +6,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/services/pdf_export_service.dart';
 import '../../data/database/app_database.dart';
 import '../../shared/providers/database_providers.dart';
 import '../../shared/widgets/common_widgets.dart';
@@ -81,8 +82,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style:
-                ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             child: const Text('Réinitialiser'),
           ),
         ],
@@ -137,8 +137,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           // Initialise les contrôleurs si pas en édition
           if (!_editing) {
             _nameController.text = profile.name;
-            _salaryController.text =
-                profile.monthlySalary.toStringAsFixed(0);
+            _salaryController.text = profile.monthlySalary.toStringAsFixed(0);
           }
 
           return ListView(
@@ -223,8 +222,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   horizontal: 10, vertical: 8),
                             ),
                           )
-                        : Text(profile.name,
-                            style: AppTextStyles.bodyMedium),
+                        : Text(profile.name, style: AppTextStyles.bodyMedium),
                   ),
                   const Divider(height: 1),
                   _SettingRow(
@@ -236,15 +234,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             style: AppTextStyles.bodyMedium,
                             decoration: InputDecoration(
                               isDense: true,
-                              contentPadding:
-                                  const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 8),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 8),
                               suffixText: profile.currency,
                             ),
                           )
                         : Text(
-                            AppFormatters.formatAmount(
-                                profile.monthlySalary,
+                            AppFormatters.formatAmount(profile.monthlySalary,
                                 currency: profile.currency),
                             style: AppTextStyles.bodyMedium),
                   ),
@@ -255,8 +251,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ? DropdownButton<String>(
                             value: profile.currency,
                             items: _currencies
-                                .map((c) => DropdownMenuItem(
-                                    value: c, child: Text(c)))
+                                .map((c) =>
+                                    DropdownMenuItem(value: c, child: Text(c)))
                                 .toList(),
                             onChanged: (c) async {
                               if (c != null) {
@@ -297,12 +293,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     value: profile.themeMode == 1,
                     activeColor: AppColors.action,
                     onChanged: (val) async {
-                      await ref
-                          .read(userProfileDaoProvider)
-                          .updateProfile(UserProfileCompanion(
-                              themeMode: Value(val ? 1 : 0)));
-                      ref.read(themeModeProvider.notifier).state =
-                          val ? 1 : 0;
+                      await ref.read(userProfileDaoProvider).updateProfile(
+                          UserProfileCompanion(themeMode: Value(val ? 1 : 0)));
+                      ref.read(themeModeProvider.notifier).state = val ? 1 : 0;
                     },
                   ),
                 ),
@@ -365,21 +358,65 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Compris')),
+              child: const Text('Annuler')),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                content: Text(
-                    'Génération PDF... (fonctionnalité à venir dans v1.1)'),
-                behavior: SnackBarBehavior.floating,
-              ));
+              _exportPdfBilan();
             },
             child: const Text('Exporter'),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _exportPdfBilan() async {
+    try {
+      // Récupérer les données du mois courant
+      final profile = await ref.read(userProfileProvider.future);
+      final transactions =
+          await ref.read(currentMonthTransactionsProvider.future);
+      final goals = await ref.read(goalsProvider.future);
+      final score = await ref.read(financialScoreProvider.future) ?? 0;
+
+      if (profile == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Profil utilisateur non trouvé'),
+            backgroundColor: AppColors.error,
+          ));
+        }
+        return;
+      }
+
+      // Générer le PDF
+      final filePath = await PdfExportService().exportMonthlyBilan(
+        userName: profile.name,
+        salary: profile.monthlySalary,
+        currency: profile.currency,
+        transactions: transactions,
+        goals: goals,
+        financialScore: score,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('PDF généré : ${filePath.split('/').last}'),
+          backgroundColor: AppColors.action,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppTheme.radiusButton)),
+        ));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Erreur : $e'),
+          backgroundColor: AppColors.error,
+        ));
+      }
+    }
   }
 }
 
@@ -423,9 +460,7 @@ class _ActionRow extends StatelessWidget {
         child: Row(children: [
           Icon(icon, color: color, size: 20),
           const SizedBox(width: 12),
-          Text(label,
-              style:
-                  AppTextStyles.bodyMedium.copyWith(color: color)),
+          Text(label, style: AppTextStyles.bodyMedium.copyWith(color: color)),
           const Spacer(),
           Icon(Icons.arrow_forward_ios_rounded,
               size: 14, color: AppColors.textDisabled),

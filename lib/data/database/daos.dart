@@ -2,8 +2,11 @@ import 'package:drift/drift.dart';
 import 'app_database.dart';
 import 'tables.dart';
 
+part 'daos.g.dart';
+
 /// DAO (Data Access Object) pour les transactions
 /// Toutes les opérations CRUD sur la table Transactions
+@DriftAccessor(tables: [Transactions])
 class TransactionsDao extends DatabaseAccessor<AppDatabase>
     with _$TransactionsDaoMixin {
   TransactionsDao(super.db);
@@ -145,6 +148,7 @@ class TransactionsDao extends DatabaseAccessor<AppDatabase>
 }
 
 /// DAO pour les objectifs d'épargne
+@DriftAccessor(tables: [Goals])
 class GoalsDao extends DatabaseAccessor<AppDatabase> with _$GoalsDaoMixin {
   GoalsDao(super.db);
 
@@ -199,17 +203,18 @@ class GoalsDao extends DatabaseAccessor<AppDatabase> with _$GoalsDaoMixin {
 }
 
 /// DAO pour le profil utilisateur
+@DriftAccessor(tables: [UserProfile])
 class UserProfileDao extends DatabaseAccessor<AppDatabase>
     with _$UserProfileDaoMixin {
   UserProfileDao(super.db);
 
   /// Retourne le profil (crée un profil par défaut s'il n'existe pas)
-  Future<UserProfile?> getProfile() async {
+  Future<UserProfileData?> getProfile() async {
     return (select(db.userProfile)).getSingleOrNull();
   }
 
   /// Stream du profil
-  Stream<UserProfile?> watchProfile() {
+  Stream<UserProfileData?> watchProfile() {
     return (select(db.userProfile)).watchSingleOrNull();
   }
 
@@ -234,6 +239,7 @@ class UserProfileDao extends DatabaseAccessor<AppDatabase>
 }
 
 /// DAO pour la progression des leçons
+@DriftAccessor(tables: [LessonProgress])
 class LessonProgressDao extends DatabaseAccessor<AppDatabase>
     with _$LessonProgressDaoMixin {
   LessonProgressDao(super.db);
@@ -276,6 +282,7 @@ class LessonProgressDao extends DatabaseAccessor<AppDatabase>
 }
 
 /// DAO pour les badges
+@DriftAccessor(tables: [EarnedBadges])
 class EarnedBadgesDao extends DatabaseAccessor<AppDatabase>
     with _$EarnedBadgesDaoMixin {
   EarnedBadgesDao(super.db);

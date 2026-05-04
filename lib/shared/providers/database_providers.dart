@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/database/app_database.dart';
+import '../../data/database/daos.dart';
+import '../../data/database/tables.dart';
 
 /// Provider singleton de la base de données Drift
 /// Toute l'app utilise cette instance unique
@@ -38,7 +40,7 @@ final earnedBadgesDaoProvider = Provider<EarnedBadgesDao>((ref) {
 // --- Streams de données réactives ---
 
 /// Stream du profil utilisateur courant
-final userProfileProvider = StreamProvider<UserProfile?>((ref) {
+final userProfileProvider = StreamProvider<UserProfileData?>((ref) {
   return ref.watch(userProfileDaoProvider).watchProfile();
 });
 
@@ -99,7 +101,7 @@ final financialScoreProvider = FutureProvider<int>((ref) async {
   final goalsCompleted = await goalsDao.getCompletedCount();
   final goalsScore = (goalsCompleted * 10).clamp(0, 30);
 
-  return (savingsScore + lessonsScore + goalsScore).clamp(0, 100);
+  return (savingsScore + lessonsScore + goalsScore).clamp(0, 100).toInt();
 });
 
 /// Provider pour le mode thème (0=light, 1=dark, 2=system)

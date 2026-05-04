@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/services/notifications_service.dart';
 import 'shared/providers/database_providers.dart';
 
 /// Point d'entrée de l'application Heza Money
@@ -12,6 +13,9 @@ void main() async {
 
   // Initialise les données de localisation françaises (formatage des dates)
   await initializeDateFormatting('fr_FR', null);
+
+  // Initialise le service de notifications (rappel mensuel du 1er)
+  await NotificationsService().init();
 
   runApp(
     // ProviderScope — racine de Riverpod, gère tous les providers
