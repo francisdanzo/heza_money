@@ -145,11 +145,11 @@ class BadgesScreen extends ConsumerWidget {
               ),
             ),
             Column(children: [
-              Text('⭐', style: const TextStyle(fontSize: 40)),
+              const Text('⭐', style: TextStyle(fontSize: 40)),
               const SizedBox(height: 4),
               HezaBadge(
                 label: level,
-                backgroundColor: levelColor.withOpacity(0.25),
+                backgroundColor: levelColor.withValues(alpha: 0.25),
                 textColor: levelColor == AppColors.alert
                     ? AppColors.alert
                     : Colors.white,
@@ -190,7 +190,7 @@ class _ScorePill extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
         decoration: BoxDecoration(
           color: active
-              ? AppColors.accent.withOpacity(0.2)
+              ? AppColors.accent.withValues(alpha: 0.2)
               : Colors.white12,
           borderRadius: BorderRadius.circular(8),
         ),
@@ -231,8 +231,8 @@ class _BadgeCard extends StatelessWidget {
           height: 60,
           decoration: BoxDecoration(
             color: earned
-                ? badge.color.withOpacity(0.15)
-                : AppColors.divider.withOpacity(0.5),
+                ? badge.color.withValues(alpha: 0.15)
+                : AppColors.divider.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(14),
           ),
           child: Center(
@@ -240,7 +240,7 @@ class _BadgeCard extends StatelessWidget {
               earned ? badge.emoji : '🔒',
               style: TextStyle(
                   fontSize: 28,
-                  color: earned ? null : Colors.grey.withOpacity(0.4)),
+                  color: earned ? null : Colors.grey.withValues(alpha: 0.4)),
             ),
           ),
         ),
@@ -262,7 +262,7 @@ class _BadgeCard extends StatelessWidget {
                   const SizedBox(width: 8),
                   HezaBadge(
                     label: 'Gagné',
-                    backgroundColor: badge.color.withOpacity(0.1),
+                    backgroundColor: badge.color.withValues(alpha: 0.1),
                     textColor: badge.color,
                   ),
                 ],

@@ -43,11 +43,11 @@ class AppDatabase extends _$AppDatabase {
 
         // Insertion du profil utilisateur par défaut
         await into(userProfile).insert(
-          UserProfileCompanion(
-            name: const Value('Utilisateur'),
-            monthlySalary: const Value(700000.0),
-            currency: const Value('BIF'),
-            themeMode: const Value(0),
+          const UserProfileCompanion(
+            name: Value('Utilisateur'),
+            monthlySalary: Value(700000.0),
+            currency: Value('BIF'),
+            themeMode: Value(0),
           ),
         );
       },

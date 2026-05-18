@@ -141,7 +141,7 @@ class _AddGoalScreenState extends ConsumerState<AddGoalScreen> {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: selectedColorVal.withOpacity(0.15),
+                    color: selectedColorVal.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Icon(Icons.flag_rounded,
@@ -151,7 +151,7 @@ class _AddGoalScreenState extends ConsumerState<AddGoalScreen> {
               const SizedBox(height: 24),
 
               // Nom de l'objectif
-              Text('Nom de l\'objectif', style: AppTextStyles.titleMedium),
+              const Text('Nom de l\'objectif', style: AppTextStyles.titleMedium),
               const SizedBox(height: 8),
               TextField(
                 controller: _titleController,
@@ -163,7 +163,7 @@ class _AddGoalScreenState extends ConsumerState<AddGoalScreen> {
               const SizedBox(height: 20),
 
               // Montant cible
-              Text('Montant cible', style: AppTextStyles.titleMedium),
+              const Text('Montant cible', style: AppTextStyles.titleMedium),
               const SizedBox(height: 8),
               TextField(
                 controller: _targetController,
@@ -177,7 +177,7 @@ class _AddGoalScreenState extends ConsumerState<AddGoalScreen> {
               const SizedBox(height: 20),
 
               // Échéance
-              Text('Échéance', style: AppTextStyles.titleMedium),
+              const Text('Échéance', style: AppTextStyles.titleMedium),
               const SizedBox(height: 8),
               GestureDetector(
                 onTap: _pickDeadline,
@@ -205,7 +205,7 @@ class _AddGoalScreenState extends ConsumerState<AddGoalScreen> {
               const SizedBox(height: 20),
 
               // Couleur
-              Text('Couleur', style: AppTextStyles.titleMedium),
+              const Text('Couleur', style: AppTextStyles.titleMedium),
               const SizedBox(height: 10),
               Wrap(
                 spacing: 10,
@@ -230,7 +230,7 @@ class _AddGoalScreenState extends ConsumerState<AddGoalScreen> {
                         boxShadow: selected
                             ? [
                                 BoxShadow(
-                                    color: color.withOpacity(0.4),
+                                    color: color.withValues(alpha: 0.4),
                                     blurRadius: 8)
                               ]
                             : null,

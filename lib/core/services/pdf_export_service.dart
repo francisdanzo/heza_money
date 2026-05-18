@@ -1,11 +1,10 @@
-import 'dart:io' show File, Directory;
+import 'dart:io' show File;
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/utils/formatters.dart';
-import '../database/app_database.dart';
+import '../../data/database/app_database.dart';
 
 /// Service pour exporter un bilan mensuel en PDF
 class PdfExportService {
@@ -36,9 +35,6 @@ class PdfExportService {
     // Calculer les stats du mois
     final expenses = transactions
         .where((t) => t.type == 'expense')
-        .fold(0.0, (s, t) => s + t.amount);
-    final income = transactions
-        .where((t) => t.type == 'income')
         .fold(0.0, (s, t) => s + t.amount);
     final savings = transactions
         .where((t) => t.category == 'epargne')
@@ -98,7 +94,7 @@ class PdfExportService {
                   ],
                 ),
                 pw.Text(
-                  DateFormat('MMMM yyyy', 'fr_FR').format(date).toUpperCase(),
+                  DateFormat('MMMM yyyy', 'fr_FR').format(date!).toUpperCase(),
                   style: const pw.TextStyle(fontSize: 14),
                 ),
               ],
@@ -188,7 +184,7 @@ class PdfExportService {
               'Généré le ${DateFormat('dd/MM/yyyy HH:mm', 'fr_FR').format(DateTime.now())}',
               style: const pw.TextStyle(
                 fontSize: 10,
-                color: PdfColor.grey,
+                color: PdfColors.grey,
               ),
             ),
           ],

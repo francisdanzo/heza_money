@@ -161,12 +161,12 @@ class AppTheme {
       ),
 
       // --- Chip ---
-      chipTheme: ChipThemeData(
+      chipTheme: const ChipThemeData(
         backgroundColor: AppColors.primaryLight,
         selectedColor: AppColors.action,
         labelStyle: AppTextStyles.labelMedium,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        shape: const StadiumBorder(),
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        shape: StadiumBorder(),
       ),
 
       // --- Divider ---
@@ -185,7 +185,7 @@ class AppTheme {
       ),
 
       // --- Text Theme ---
-      textTheme: TextTheme(
+      textTheme: const TextTheme(
         displayLarge: AppTextStyles.displayLarge,
         displayMedium: AppTextStyles.displayMedium,
         headlineLarge: AppTextStyles.headlineLarge,

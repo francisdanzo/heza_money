@@ -73,11 +73,11 @@ class LessonDetailScreen extends ConsumerWidget {
                                 HezaBadge(
                                   label: lesson.level,
                                   backgroundColor:
-                                      levelColor.withOpacity(0.2),
+                                      levelColor.withValues(alpha: 0.2),
                                   textColor: levelColor,
                                 ),
                                 const SizedBox(width: 8),
-                                Icon(Icons.timer_outlined,
+                                const Icon(Icons.timer_outlined,
                                     size: 13, color: Colors.white70),
                                 const SizedBox(width: 3),
                                 Text(lesson.duration,

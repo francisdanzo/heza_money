@@ -57,7 +57,7 @@ class TransactionsDao extends DatabaseAccessor<AppDatabase>
           ..where(
               (t) => t.monthKey.equals(key) & t.type.equals('expense')))
         .get();
-    return result.fold(0.0, (sum, t) => sum + t.amount);
+    return result.fold<double>(0.0, (sum, t) => sum + t.amount);
   }
 
   /// Total des revenus du mois courant
@@ -68,7 +68,7 @@ class TransactionsDao extends DatabaseAccessor<AppDatabase>
           ..where(
               (t) => t.monthKey.equals(key) & t.type.equals('income')))
         .get();
-    return result.fold(0.0, (sum, t) => sum + t.amount);
+    return result.fold<double>(0.0, (sum, t) => sum + t.amount);
   }
 
   /// Total épargne du mois courant (catégorie 'epargne')
@@ -81,7 +81,7 @@ class TransactionsDao extends DatabaseAccessor<AppDatabase>
               t.category.equals('epargne') &
               t.type.equals('expense')))
         .get();
-    return result.fold(0.0, (sum, t) => sum + t.amount);
+    return result.fold<double>(0.0, (sum, t) => sum + t.amount);
   }
 
   /// Dépenses groupées par catégorie pour le mois courant

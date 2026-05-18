@@ -10,7 +10,6 @@ import '../../core/services/pdf_export_service.dart';
 import '../../data/database/app_database.dart';
 import '../../shared/providers/database_providers.dart';
 import '../../shared/widgets/common_widgets.dart';
-import '../gamification/badges_screen.dart';
 
 /// Écran Profil — paramètres utilisateur
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -69,9 +68,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Réinitialiser les données',
+        title: const Text('Réinitialiser les données',
             style: AppTextStyles.headlineSmall),
-        content: Text(
+        content: const Text(
           'Cette action supprimera toutes tes transactions, objectifs et progressions. Cette action est irréversible.',
           style: AppTextStyles.bodyMedium,
         ),
@@ -206,7 +205,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const SizedBox(height: 20),
 
               // Informations personnelles
-              SectionHeader(title: 'Informations'),
+              const SectionHeader(title: 'Informations'),
               const SizedBox(height: 12),
               HezaCard(
                 child: Column(children: [
@@ -284,14 +283,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const SizedBox(height: 20),
 
               // Thème
-              SectionHeader(title: 'Apparence'),
+              const SectionHeader(title: 'Apparence'),
               const SizedBox(height: 12),
               HezaCard(
                 child: _SettingRow(
                   label: 'Mode sombre',
                   child: Switch(
                     value: profile.themeMode == 1,
-                    activeColor: AppColors.action,
+                    activeThumbColor: AppColors.action,
                     onChanged: (val) async {
                       await ref.read(userProfileDaoProvider).updateProfile(
                           UserProfileCompanion(themeMode: Value(val ? 1 : 0)));
@@ -303,7 +302,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const SizedBox(height: 20),
 
               // Actions
-              SectionHeader(title: 'Actions'),
+              const SectionHeader(title: 'Actions'),
               const SizedBox(height: 12),
               HezaCard(
                 child: Column(children: [
@@ -332,7 +331,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const SizedBox(height: 32),
 
               // Version
-              Center(
+              const Center(
                 child: Text(
                   'Heza Money v1.0 — Feel good about your money 💚',
                   style: AppTextStyles.bodySmall,
@@ -350,8 +349,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Export PDF', style: AppTextStyles.headlineSmall),
-        content: Text(
+        title: const Text('Export PDF', style: AppTextStyles.headlineSmall),
+        content: const Text(
           'L\'export PDF génère un bilan mensuel complet avec tes transactions, ton score financier et la répartition de tes dépenses.',
           style: AppTextStyles.bodyMedium,
         ),
@@ -378,7 +377,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       final transactions =
           await ref.read(currentMonthTransactionsProvider.future);
       final goals = await ref.read(goalsProvider.future);
-      final score = await ref.read(financialScoreProvider.future) ?? 0;
+      final score = await ref.read(financialScoreProvider.future);
 
       if (profile == null) {
         if (mounted) {
@@ -462,7 +461,7 @@ class _ActionRow extends StatelessWidget {
           const SizedBox(width: 12),
           Text(label, style: AppTextStyles.bodyMedium.copyWith(color: color)),
           const Spacer(),
-          Icon(Icons.arrow_forward_ios_rounded,
+          const Icon(Icons.arrow_forward_ios_rounded,
               size: 14, color: AppColors.textDisabled),
         ]),
       ),

@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:flutter/material.dart' show Color;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:io' show Platform;
 import 'package:timezone/data/latest_all.dart' as tz;
@@ -19,123 +21,130 @@ class NotificationsService {
 
   /// Initialise le service de notifications
   Future<void> init() async {
-    tz.initializeTimeZones();
+    try {
+      tz.initializeTimeZones();
 
-    flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+      flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
-    // --- Configuration Linux ---
-    const LinuxInitializationSettings initializationSettingsLinux =
-        LinuxInitializationSettings(
-      defaultActionName: 'Open notification',
-    );
+      // --- Configuration Linux ---
+      const LinuxInitializationSettings initializationSettingsLinux =
+          LinuxInitializationSettings(
+        defaultActionName: 'Open notification',
+      );
 
-    // --- Configuration Android ---
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+      // --- Configuration Android ---
+      const AndroidInitializationSettings initializationSettingsAndroid =
+          AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    // --- Configuration iOS ---
-    const DarwinInitializationSettings initializationSettingsIOS =
-        DarwinInitializationSettings(
-      requestAlertPermission: false,
-      requestBadgePermission: false,
-      requestSoundPermission: false,
-    );
+      // --- Configuration iOS ---
+      const DarwinInitializationSettings initializationSettingsIOS =
+          DarwinInitializationSettings(
+        requestAlertPermission: false,
+        requestBadgePermission: false,
+        requestSoundPermission: false,
+      );
 
-    // --- Fusion des configurations ---
-    final InitializationSettings initializationSettings =
-        InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsIOS,
-      linux: initializationSettingsLinux,
-    );
+      // --- Fusion des configurations ---
+      const InitializationSettings initializationSettings =
+          InitializationSettings(
+        android: initializationSettingsAndroid,
+        iOS: initializationSettingsIOS,
+        linux: initializationSettingsLinux,
+      );
 
-    await flutterLocalNotificationsPlugin.initialize(
-      initializationSettings,
-      onDidReceiveNotificationResponse: _onNotificationTap,
-    );
+      await flutterLocalNotificationsPlugin.initialize(
+        initializationSettings,
+        onDidReceiveNotificationResponse: _onNotificationTap,
+      );
 
-    // --- Permission iOS ---
-    if (Platform.isIOS) {
-      await flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<
-              IOSFlutterLocalNotificationsPlugin>()
-          ?.requestPermissions(
-            alert: true,
-            badge: true,
-            sound: true,
-          );
+      // --- Permission iOS ---
+      if (Platform.isIOS) {
+        await flutterLocalNotificationsPlugin
+            .resolvePlatformSpecificImplementation<
+                IOSFlutterLocalNotificationsPlugin>()
+            ?.requestPermissions(
+              alert: true,
+              badge: true,
+              sound: true,
+            );
+      }
+
+      debugPrint('✅ Notifications Service initialisé');
+    } catch (e) {
+      debugPrint('⚠️ Notifications init error: $e');
     }
-
-    // --- Planifier la notification mensuelle du 1er ---
-    await _scheduleMonthlyBilanNotification();
-
-    print('✅ Notifications Service initialisé');
   }
 
   /// Planifie une notification pour chaque 1er du mois à 9h
   Future<void> _scheduleMonthlyBilanNotification() async {
-    // Calculer la prochaine occurrence du 1er du mois
-    final now = tz.TZDateTime.now(tz.local);
-    var scheduledDate = tz.TZDateTime(
-      tz.local,
-      now.year,
-      now.month,
-      1,
-      9, // 9h00 du matin
-      0,
-    );
+    try {
+      // Calculer la prochaine occurrence du 1er du mois
+      final now = tz.TZDateTime.now(tz.local);
+      var scheduledDate = tz.TZDateTime(
+        tz.local,
+        now.year,
+        now.month,
+        1,
+        9, // 9h00 du matin
+        0,
+      );
 
-    // Si le 1er est passé, programmer pour le 1er du mois suivant
-    if (scheduledDate.isBefore(now)) {
-      final nextMonth = now.month == 12
-          ? tz.TZDateTime(tz.local, now.year + 1, 1, 9, 0)
-          : tz.TZDateTime(tz.local, now.year, now.month + 1, 1, 9, 0);
-      scheduledDate = nextMonth;
+      // Si le 1er est passé, programmer pour le 1er du mois suivant
+      if (scheduledDate.isBefore(now)) {
+        final nextMonth = now.month == 12
+            ? tz.TZDateTime(tz.local, now.year + 1, 1, 9, 0)
+            : tz.TZDateTime(tz.local, now.year, now.month + 1, 1, 9, 0);
+        scheduledDate = nextMonth;
+      }
+
+      const AndroidNotificationDetails androidNotificationDetails =
+          AndroidNotificationDetails(
+        'heza_money_monthly',
+        'Bilan mensuel',
+        channelDescription: 'Rappel du bilan mensuel Heza Money',
+        importance: Importance.high,
+        priority: Priority.high,
+        enableVibration: true,
+        enableLights: true,
+        color: Color(0xFF0F6E56), // Couleur primaire
+      );
+
+      const DarwinNotificationDetails iosNotificationDetails =
+          DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      );
+
+      const LinuxNotificationDetails linuxNotificationDetails =
+          LinuxNotificationDetails(
+        defaultActionName: 'Open',
+      );
+
+      const NotificationDetails notificationDetails = NotificationDetails(
+        android: androidNotificationDetails,
+        iOS: iosNotificationDetails,
+        linux: linuxNotificationDetails,
+      );
+
+      if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS) {
+        await flutterLocalNotificationsPlugin.zonedSchedule(
+          0, // ID de la notification
+          '💚 Bilan mensuel Heza Money',
+          'C\'est le jour de faire le point sur ton budget et tes objectifs !',
+          scheduledDate,
+          notificationDetails,
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+          matchDateTimeComponents: DateTimeComponents.dayOfMonthAndTime,
+        );
+      }
+
+      debugPrint('📅 Notification mensuelle planifiée pour le 1er à 9h');
+    } catch (e) {
+      debugPrint('⚠️ Monthly notification scheduling error: $e');
     }
-
-    const AndroidNotificationDetails androidNotificationDetails =
-        AndroidNotificationDetails(
-      'heza_money_monthly',
-      'Bilan mensuel',
-      channelDescription: 'Rappel du bilan mensuel Heza Money',
-      importance: Importance.high,
-      priority: Priority.high,
-      enableVibration: true,
-      enableLights: true,
-      color: 0xFF0F6E56, // Couleur primaire
-    );
-
-    const DarwinNotificationDetails iosNotificationDetails =
-        DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-    );
-
-    const LinuxNotificationDetails linuxNotificationDetails =
-        LinuxNotificationDetails(
-      defaultActionName: 'Open',
-    );
-
-    final NotificationDetails notificationDetails = NotificationDetails(
-      android: androidNotificationDetails,
-      iOS: iosNotificationDetails,
-      linux: linuxNotificationDetails,
-    );
-
-    await flutterLocalNotificationsPlugin.zonedSchedule(
-      0, // ID de la notification
-      '💚 Bilan mensuel Heza Money',
-      'C\'est le jour de faire le point sur ton budget et tes objectifs !',
-      scheduledDate,
-      notificationDetails,
-      androidScheduleMode: AndroidScheduleMode.exactAndAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.dayOfMonthAndTime,
-    );
-
-    print('📅 Notification mensuelle planifiée pour le 1er à 9h');
   }
 
   /// Envoie une notification simple immédiate
@@ -177,6 +186,6 @@ class NotificationsService {
   /// Callback quand on tap une notification
   void _onNotificationTap(NotificationResponse notificationResponse) {
     // Ici on peut naviguer vers un écran spécifique si nécessaire
-    print('Notification tappée: ${notificationResponse.payload}');
+    debugPrint('Notification tappée: ${notificationResponse.payload}');
   }
 }

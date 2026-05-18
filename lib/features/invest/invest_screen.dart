@@ -89,7 +89,7 @@ class _LessonsTab extends ConsumerWidget {
             _buildXpCard(completedCount, total, scoreAsync.value ?? 0),
             const SizedBox(height: 20),
 
-            SectionHeader(title: 'Toutes les leçons'),
+            const SectionHeader(title: 'Toutes les leçons'),
             const SizedBox(height: 12),
 
             ...LessonsData.all.map((lesson) {
@@ -142,7 +142,7 @@ class _LessonsTab extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
+                color: Colors.white.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Text('🎓', style: TextStyle(fontSize: 28)),
@@ -194,7 +194,7 @@ class _LessonCard extends ConsumerWidget {
                 height: 50,
                 decoration: BoxDecoration(
                   color: completed
-                      ? AppColors.action.withOpacity(0.1)
+                      ? AppColors.action.withValues(alpha: 0.1)
                       : AppColors.primaryLight,
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -230,11 +230,11 @@ class _LessonCard extends ConsumerWidget {
                 Row(children: [
                   HezaBadge(
                     label: lesson.level,
-                    backgroundColor: _levelColor.withOpacity(0.1),
+                    backgroundColor: _levelColor.withValues(alpha: 0.1),
                     textColor: _levelColor,
                   ),
                   const SizedBox(width: 8),
-                  Icon(Icons.timer_outlined,
+                  const Icon(Icons.timer_outlined,
                       size: 12, color: AppColors.textSecondary),
                   const SizedBox(width: 3),
                   Text(lesson.duration, style: AppTextStyles.bodySmall),
@@ -386,7 +386,7 @@ class _SimulatorTabState extends State<_SimulatorTab> {
                         isStrokeCapRound: true,
                         belowBarData: BarAreaData(
                           show: true,
-                          color: AppColors.action.withOpacity(0.1),
+                          color: AppColors.action.withValues(alpha: 0.1),
                         ),
                         dotData: const FlDotData(show: false),
                       ),
@@ -406,7 +406,7 @@ class _SimulatorTabState extends State<_SimulatorTab> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Paramètres', style: AppTextStyles.headlineSmall),
+              const Text('Paramètres', style: AppTextStyles.headlineSmall),
               const SizedBox(height: 16),
               _SliderRow(
                 label: 'Montant initial',

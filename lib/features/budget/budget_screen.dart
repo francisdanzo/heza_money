@@ -59,7 +59,7 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
             Text(
               AppFormatters.formatMonthYear(DateTime.now()),
               style: AppTextStyles.bodySmall
-                  .copyWith(color: Colors.white.withOpacity(0.7)),
+                  .copyWith(color: Colors.white.withValues(alpha: 0.7)),
             ),
           ],
         ),
@@ -253,7 +253,7 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Répartition des dépenses',
+          const Text('Répartition des dépenses',
               style: AppTextStyles.headlineSmall),
           const SizedBox(height: 4),
           Text(
@@ -337,7 +337,7 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Règle 50 / 30 / 20', style: AppTextStyles.headlineSmall),
+          const Text('Règle 50 / 30 / 20', style: AppTextStyles.headlineSmall),
           const SizedBox(height: 4),
           Text(
             'Basé sur ${AppFormatters.formatAmount(salary, currency: currency)}',

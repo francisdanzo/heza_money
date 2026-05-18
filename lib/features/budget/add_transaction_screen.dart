@@ -185,7 +185,7 @@ class _AddTransactionScreenState
               const SizedBox(height: 24),
 
               // Montant
-              Text('Montant', style: AppTextStyles.titleMedium),
+              const Text('Montant', style: AppTextStyles.titleMedium),
               const SizedBox(height: 8),
               TextField(
                 controller: _amountController,
@@ -203,7 +203,7 @@ class _AddTransactionScreenState
               const SizedBox(height: 20),
 
               // Catégorie
-              Text('Catégorie', style: AppTextStyles.titleMedium),
+              const Text('Catégorie', style: AppTextStyles.titleMedium),
               const SizedBox(height: 10),
               Wrap(
                 spacing: 8,
@@ -257,7 +257,7 @@ class _AddTransactionScreenState
               const SizedBox(height: 20),
 
               // Date
-              Text('Date', style: AppTextStyles.titleMedium),
+              const Text('Date', style: AppTextStyles.titleMedium),
               const SizedBox(height: 8),
               GestureDetector(
                 onTap: _pickDate,
@@ -286,7 +286,7 @@ class _AddTransactionScreenState
               const SizedBox(height: 20),
 
               // Note optionnelle
-              Text('Note (optionnelle)', style: AppTextStyles.titleMedium),
+              const Text('Note (optionnelle)', style: AppTextStyles.titleMedium),
               const SizedBox(height: 8),
               TextField(
                 controller: _noteController,

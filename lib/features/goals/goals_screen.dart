@@ -122,7 +122,7 @@ class _GoalCard extends ConsumerWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: color.withOpacity(0.15),
+                color: color.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(Icons.flag_rounded, color: color, size: 22),
@@ -227,7 +227,7 @@ class _GoalCard extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Ajouter des fonds', style: AppTextStyles.headlineSmall),
+        title: const Text('Ajouter des fonds', style: AppTextStyles.headlineSmall),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -307,9 +307,9 @@ class _EmergencyFundCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.alert.withOpacity(0.1),
+        color: AppColors.alert.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppTheme.radiusCard),
-        border: Border.all(color: AppColors.alert.withOpacity(0.3)),
+        border: Border.all(color: AppColors.alert.withValues(alpha: 0.3)),
       ),
       child: Row(children: [
         const Text('🛡️', style: TextStyle(fontSize: 30)),
@@ -318,7 +318,7 @@ class _EmergencyFundCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Fonds d\'urgence recommandé',
+              const Text('Fonds d\'urgence recommandé',
                   style: AppTextStyles.titleSmall),
               const SizedBox(height: 4),
               Text(
@@ -327,7 +327,7 @@ class _EmergencyFundCard extends StatelessWidget {
                 style: AppTextStyles.amountSmall
                     .copyWith(color: AppColors.alert),
               ),
-              Text(
+              const Text(
                 '= 3 mois de loyer estimé',
                 style: AppTextStyles.bodySmall,
               ),

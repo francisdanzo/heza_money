@@ -209,7 +209,7 @@ class HomeScreen extends ConsumerWidget {
                     Text(
                       AppFormatters.formatDateLong(now),
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                       ),
                     ),
                   ],
@@ -242,7 +242,7 @@ class HomeScreen extends ConsumerWidget {
           Text(
             'Solde disponible',
             style: AppTextStyles.bodySmall.copyWith(
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
             ),
           ),
           const SizedBox(height: 4),
@@ -292,7 +292,7 @@ class HomeScreen extends ConsumerWidget {
           icon: Icons.flag_rounded,
           label: 'Objectif',
           onTap: () => context.push('/goals'),
-          backgroundColor: Color(0xFFFFF3E0),
+          backgroundColor: const Color(0xFFFFF3E0),
           iconColor: AppColors.alert,
         ),
         QuickActionButton(
@@ -325,7 +325,7 @@ class HomeScreen extends ConsumerWidget {
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
-                        color: AppColors.error.withOpacity(0.1),
+                        color: AppColors.error.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(Icons.arrow_downward_rounded,
@@ -362,7 +362,7 @@ class HomeScreen extends ConsumerWidget {
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
-                        color: AppColors.action.withOpacity(0.1),
+                        color: AppColors.action.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(Icons.savings_rounded,
@@ -404,11 +404,11 @@ class HomeScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
               Text('Règle 50/30/20', style: AppTextStyles.headlineSmall),
-              const Spacer(),
-              const HezaBadge(label: 'Ce mois'),
+              Spacer(),
+              HezaBadge(label: 'Ce mois'),
             ],
           ),
           const SizedBox(height: 16),
@@ -458,12 +458,12 @@ class HomeScreen extends ConsumerWidget {
                 Text(
                   '📚 Leçon du jour',
                   style: AppTextStyles.labelMedium
-                      .copyWith(color: Colors.white.withOpacity(0.7)),
+                      .copyWith(color: Colors.white.withValues(alpha: 0.7)),
                 ),
                 const Spacer(),
                 HezaBadge(
                   label: lesson.level,
-                  backgroundColor: AppColors.primaryLight.withOpacity(0.2),
+                  backgroundColor: AppColors.primaryLight.withValues(alpha: 0.2),
                   textColor: AppColors.accent,
                 ),
               ],
@@ -478,12 +478,12 @@ class HomeScreen extends ConsumerWidget {
             Row(
               children: [
                 Icon(Icons.timer_outlined,
-                    size: 14, color: Colors.white.withOpacity(0.6)),
+                    size: 14, color: Colors.white.withValues(alpha: 0.6)),
                 const SizedBox(width: 4),
                 Text(
                   lesson.duration,
                   style: AppTextStyles.bodySmall
-                      .copyWith(color: Colors.white.withOpacity(0.6)),
+                      .copyWith(color: Colors.white.withValues(alpha: 0.6)),
                 ),
                 const Spacer(),
                 Text(

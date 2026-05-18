@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/database/app_database.dart';
 import '../../data/database/daos.dart';
-import '../../data/database/tables.dart';
 
 /// Provider singleton de la base de données Drift
 /// Toute l'app utilise cette instance unique
