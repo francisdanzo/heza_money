@@ -36,6 +36,11 @@ final earnedBadgesDaoProvider = Provider<EarnedBadgesDao>((ref) {
   return ref.watch(databaseProvider).earnedBadgesDao;
 });
 
+/// Provider du DAO limites budgétaires
+final categoryBudgetsDaoProvider = Provider<CategoryBudgetsDao>((ref) {
+  return ref.watch(databaseProvider).categoryBudgetsDao;
+});
+
 // --- Streams de données réactives ---
 
 /// Stream du profil utilisateur courant
@@ -63,6 +68,11 @@ final lessonProgressProvider =
 /// Stream des badges gagnés
 final earnedBadgesProvider = StreamProvider<List<EarnedBadge>>((ref) {
   return ref.watch(earnedBadgesDaoProvider).watchAll();
+});
+
+/// Stream des limites budgétaires par catégorie
+final categoryBudgetsProvider = StreamProvider<List<CategoryBudget>>((ref) {
+  return ref.watch(categoryBudgetsDaoProvider).watchAll();
 });
 
 // --- Providers calculés ---
@@ -101,6 +111,20 @@ final financialScoreProvider = FutureProvider<int>((ref) async {
   final goalsScore = (goalsCompleted * 10).clamp(0, 30);
 
   return (savingsScore + lessonsScore + goalsScore).clamp(0, 100).toInt();
+});
+
+/// Dépenses des 6 derniers mois (pour le graphique de tendance)
+final sixMonthExpensesProvider = FutureProvider<Map<String, double>>((ref) {
+  return ref.watch(transactionsDaoProvider).getLastSixMonthsExpenses();
+});
+
+/// Mois sélectionné dans l'écran Budget (navigation historique)
+final selectedBudgetMonthProvider = StateProvider<DateTime>((ref) => DateTime.now());
+
+/// Transactions du mois sélectionné (réactif au changement de mois)
+final selectedMonthTransactionsProvider = StreamProvider<List<Transaction>>((ref) {
+  final month = ref.watch(selectedBudgetMonthProvider);
+  return ref.watch(transactionsDaoProvider).watchMonth(month.year, month.month);
 });
 
 /// Provider pour le mode thème (0=light, 1=dark, 2=system)

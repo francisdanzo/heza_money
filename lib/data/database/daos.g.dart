@@ -18,3 +18,6 @@ mixin _$LessonProgressDaoMixin on DatabaseAccessor<AppDatabase> {
 mixin _$EarnedBadgesDaoMixin on DatabaseAccessor<AppDatabase> {
   $EarnedBadgesTable get earnedBadges => attachedDatabase.earnedBadges;
 }
+mixin _$CategoryBudgetsDaoMixin on DatabaseAccessor<AppDatabase> {
+  $CategoryBudgetsTable get categoryBudgets => attachedDatabase.categoryBudgets;
+}

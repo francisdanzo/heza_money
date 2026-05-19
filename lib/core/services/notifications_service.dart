@@ -69,6 +69,7 @@ class NotificationsService {
             );
       }
 
+      await scheduleMonthlyReminder();
       debugPrint('✅ Notifications Service initialisé');
     } catch (e) {
       debugPrint('⚠️ Notifications init error: $e');
@@ -76,7 +77,7 @@ class NotificationsService {
   }
 
   /// Planifie une notification pour chaque 1er du mois à 9h
-  Future<void> _scheduleMonthlyBilanNotification() async {
+  Future<void> scheduleMonthlyReminder() async {
     try {
       // Calculer la prochaine occurrence du 1er du mois
       final now = tz.TZDateTime.now(tz.local);
@@ -134,7 +135,7 @@ class NotificationsService {
           'C\'est le jour de faire le point sur ton budget et tes objectifs !',
           scheduledDate,
           notificationDetails,
-          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
           uiLocalNotificationDateInterpretation:
               UILocalNotificationDateInterpretation.absoluteTime,
           matchDateTimeComponents: DateTimeComponents.dayOfMonthAndTime,

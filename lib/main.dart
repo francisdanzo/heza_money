@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -41,6 +42,17 @@ class HezaMoneyApp extends ConsumerWidget {
       2 => ThemeMode.system,
       _ => ThemeMode.light,
     };
+
+    final isDark = flutterThemeMode == ThemeMode.dark ||
+        (flutterThemeMode == ThemeMode.system &&
+            MediaQuery.platformBrightnessOf(context) == Brightness.dark);
+
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarColor: isDark ? const Color(0xFF0A1810) : const Color(0xFFF0F9F5),
+      systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+    ));
 
     return MaterialApp.router(
       // ─── Métadonnées de l'app ───

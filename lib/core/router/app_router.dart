@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../data/database/app_database.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/budget/budget_screen.dart';
 import '../../features/invest/invest_screen.dart';
@@ -9,7 +10,36 @@ import '../../features/goals/add_goal_screen.dart';
 import '../../features/budget/add_transaction_screen.dart';
 import '../../features/invest/lesson_detail_screen.dart';
 import '../../features/gamification/badges_screen.dart';
+import '../../features/onboarding/onboarding_screen.dart';
 import '../../shared/widgets/main_shell.dart';
+
+CustomTransitionPage<void> _slideUpPage(GoRouterState state, Widget child) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 300),
+    reverseTransitionDuration: const Duration(milliseconds: 250),
+    transitionsBuilder: (context, animation, _, child) {
+      final tween = Tween(begin: const Offset(0, 1), end: Offset.zero)
+          .chain(CurveTween(curve: Curves.easeOutCubic));
+      return SlideTransition(position: animation.drive(tween), child: child);
+    },
+  );
+}
+
+CustomTransitionPage<void> _slideRightPage(GoRouterState state, Widget child) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 280),
+    reverseTransitionDuration: const Duration(milliseconds: 250),
+    transitionsBuilder: (context, animation, _, child) {
+      final tween = Tween(begin: const Offset(1, 0), end: Offset.zero)
+          .chain(CurveTween(curve: Curves.easeOutCubic));
+      return SlideTransition(position: animation.drive(tween), child: child);
+    },
+  );
+}
 
 /// Configuration du routeur go_router pour Heza Money
 /// La navigation principale utilise un shell avec BottomNavigationBar
@@ -23,15 +53,16 @@ class AppRouter {
       GlobalKey<NavigatorState>(debugLabel: 'shell');
 
   // --- Noms des routes ---
-  static const String home = '/';
-  static const String budget = '/budget';
-  static const String invest = '/invest';
-  static const String profile = '/profile';
-  static const String goals = '/goals';
-  static const String addGoal = '/goals/add';
+  static const String home        = '/';
+  static const String budget      = '/budget';
+  static const String invest      = '/invest';
+  static const String profile     = '/profile';
+  static const String goals       = '/goals';
+  static const String addGoal     = '/goals/add';
   static const String addTransaction = '/budget/add';
-  static const String lessonDetail = '/invest/lesson/:id';
-  static const String badges = '/badges';
+  static const String lessonDetail   = '/invest/lesson/:id';
+  static const String badges      = '/badges';
+  static const String onboarding  = '/onboarding';
 
   static final GoRouter router = GoRouter(
     navigatorKey: _rootNavigatorKey,
@@ -74,33 +105,42 @@ class AppRouter {
       GoRoute(
         path: goals,
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const GoalsScreen(),
+        pageBuilder: (context, state) => _slideUpPage(state, const GoalsScreen()),
       ),
       GoRoute(
         path: addGoal,
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const AddGoalScreen(),
+        pageBuilder: (context, state) {
+          final goal = state.extra as Goal?;
+          return _slideUpPage(state, AddGoalScreen(goal: goal));
+        },
       ),
       GoRoute(
         path: addTransaction,
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) {
-          final type = state.uri.queryParameters['type'] ?? 'expense';
-          return AddTransactionScreen(initialType: type);
+        pageBuilder: (context, state) {
+          final type        = state.uri.queryParameters['type'] ?? 'expense';
+          final transaction = state.extra as Transaction?;
+          return _slideUpPage(state, AddTransactionScreen(initialType: type, transaction: transaction));
         },
       ),
       GoRoute(
         path: lessonDetail,
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final id = state.pathParameters['id'] ?? '01';
-          return LessonDetailScreen(lessonId: id);
+          return _slideRightPage(state, LessonDetailScreen(lessonId: id));
         },
       ),
       GoRoute(
         path: badges,
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const BadgesScreen(),
+        pageBuilder: (context, state) => _slideRightPage(state, const BadgesScreen()),
+      ),
+      GoRoute(
+        path: onboarding,
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _slideUpPage(state, const OnboardingScreen()),
       ),
     ],
   );

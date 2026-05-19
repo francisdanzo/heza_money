@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 /// Formateurs utilitaires pour Heza Money
@@ -98,5 +99,29 @@ class AppFormatters {
     final rem = months % 12;
     if (rem == 0) return '$years an${years > 1 ? 's' : ''}';
     return '$years an${years > 1 ? 's' : ''} $rem mois';
+  }
+}
+
+/// TextInputFormatter qui ajoute des espaces tous les 3 chiffres (ex: 500 000).
+class ThousandsSeparatorFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final digits = newValue.text.replaceAll(' ', '');
+    if (digits.isEmpty) return newValue.copyWith(text: '');
+
+    final buffer = StringBuffer();
+    for (int i = 0; i < digits.length; i++) {
+      if (i > 0 && (digits.length - i) % 3 == 0) buffer.write(' ');
+      buffer.write(digits[i]);
+    }
+
+    final formatted = buffer.toString();
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'app_database.dart';
 import 'tables.dart';
+// ignore_for_file: unused_import
 
 part 'daos.g.dart';
 
@@ -104,6 +105,42 @@ class TransactionsDao extends DatabaseAccessor<AppDatabase>
   Future<bool> hasAnyTransaction() async {
     final count = await (select(db.transactions)).get();
     return count.isNotEmpty;
+  }
+
+  /// Vérifie si 10 transactions ou plus existent
+  Future<bool> hasTenTransactions() async {
+    final rows = await (select(db.transactions)).get();
+    return rows.length >= 10;
+  }
+
+  /// Vérifie si au moins un revenu existe
+  Future<bool> hasIncomeTransaction() async {
+    final rows = await (select(db.transactions)
+          ..where((t) => t.type.equals('income')))
+        .get();
+    return rows.isNotEmpty;
+  }
+
+  /// Retourne le total des dépenses d'un mois spécifique
+  Future<double> getTotalExpensesForMonth(String monthKey) async {
+    final rows = await (select(db.transactions)
+          ..where((t) => t.monthKey.equals(monthKey) & t.type.equals('expense')))
+        .get();
+    return rows.fold<double>(0.0, (s, t) => s + t.amount);
+  }
+
+  /// Retourne les dépenses des 6 derniers mois (clé → montant)
+  Future<Map<String, double>> getLastSixMonthsExpenses() async {
+    final now = DateTime.now();
+    final result = <String, double>{};
+    for (int i = 5; i >= 0; i--) {
+      var month = now.month - i;
+      var year  = now.year;
+      if (month <= 0) { month += 12; year -= 1; }
+      final key = '$year-${month.toString().padLeft(2, '0')}';
+      result[key] = await getTotalExpensesForMonth(key);
+    }
+    return result;
   }
 
   /// Vérifie si l'utilisateur a épargné 3 mois de suite
@@ -310,4 +347,37 @@ class EarnedBadgesDao extends DatabaseAccessor<AppDatabase>
   Future<int> deleteAll() {
     return delete(db.earnedBadges).go();
   }
+}
+
+/// DAO pour les limites budgétaires par catégorie
+@DriftAccessor(tables: [CategoryBudgets])
+class CategoryBudgetsDao extends DatabaseAccessor<AppDatabase>
+    with _$CategoryBudgetsDaoMixin {
+  CategoryBudgetsDao(super.db);
+
+  Stream<List<CategoryBudget>> watchAll() =>
+      select(db.categoryBudgets).watch();
+
+  Future<CategoryBudget?> getByCategory(String category) async {
+    return (select(db.categoryBudgets)
+          ..where((c) => c.category.equals(category)))
+        .getSingleOrNull();
+  }
+
+  Future<void> setLimit(String category, double amount) async {
+    await into(db.categoryBudgets).insertOnConflictUpdate(
+      CategoryBudgetsCompanion(
+        category: Value(category),
+        limitAmount: Value(amount),
+      ),
+    );
+  }
+
+  Future<void> removeLimit(String category) async {
+    await (delete(db.categoryBudgets)
+          ..where((c) => c.category.equals(category)))
+        .go();
+  }
+
+  Future<int> deleteAll() => delete(db.categoryBudgets).go();
 }

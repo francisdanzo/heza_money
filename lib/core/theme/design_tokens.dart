@@ -1,140 +1,181 @@
 import 'package:flutter/material.dart';
 
-/// Design tokens pour Heza Money — Glassmorphism avec Dark/Light Theme
-/// Basé sur le design system UI/UX Pro Max
+// ─── PALETTE HEZA MONEY ─────────────────────────────────────────────────────
+// Couleurs sémantiques pour glassmorphisme dark/light
+// Utiliser ces tokens partout — jamais de hex bruts dans les écrans
+// ─────────────────────────────────────────────────────────────────────────────
 
 class HezaColors {
-  // --- LIGHT MODE ---
-  static const Color lightBackground = Color(0xFFF8FAFC);
-  static const Color lightSurface = Color(0xFFFFFFFF);
-  static const Color lightSurfaceAlt = Color(0xFFF1F5F9);
-  static const Color lightOnSurface = Color(0xFF0F172A);
-  static const Color lightOnSurfaceSecondary = Color(0xFF475569);
-  static const Color lightBorder = Color(0xFFE2E8F0);
+  HezaColors._();
 
-  // --- DARK MODE ---
-  static const Color darkBackground = Color(0xFF0F172A);
-  static const Color darkSurface = Color(0xFF1A2847);
-  static const Color darkSurfaceAlt = Color(0xFF254264);
-  static const Color darkOnSurface = Color(0xFFFFFFFF);
-  static const Color darkOnSurfaceSecondary = Color(0xFFCBD5E1);
-  static const Color darkBorder = Color(0xFF334155);
+  // ── BRAND VERT (identité Heza Money) ───────────────────────────────────────
+  static const Color primary       = Color(0xFF0F6E56); // Vert profond (light mode)
+  static const Color primaryLight  = Color(0xFF1D9E75); // Vert vif (dark mode + hover)
+  static const Color accent        = Color(0xFF5DCAA5); // Vert menthe (accents)
+  static const Color accentSoft    = Color(0xFFA8E6D4); // Vert doux (dark mode accents)
 
-  // --- SEMANTIC COLORS ---
-  static const Color primary = Color(0xFF1E40AF); // Trust blue
-  static const Color primaryLight = Color(0xFF3B82F6);
-  static const Color accent = Color(0xFF059669); // Profit green
-  static const Color accentLight = Color(0xFF10B981);
-  static const Color error = Color(0xFFDC2626);
-  static const Color errorLight = Color(0xFFEF4444);
-  static const Color warning = Color(0xFFF59E0B);
-  static const Color success = Color(0xFF059669);
-  static const Color info = Color(0xFF0284C7);
+  // ── FONCTIONNEL ───────────────────────────────────────────────────────────
+  static const Color success       = Color(0xFF1D9E75);
+  static const Color successSoft   = Color(0xFFDCFCE7);
+  static const Color warning       = Color(0xFFEF9F27);
+  static const Color warningSoft   = Color(0xFFFEF9C3);
+  static const Color error         = Color(0xFFDC2626);
+  static const Color errorSoft     = Color(0xFFFEE2E2);
+  static const Color info          = Color(0xFF0284C7);
 
-  // --- GLASS EFFECT COLORS ---
-  static const Color glassLight = Color(0xFFFFFFFF);
-  static const Color glassDark = Color(0xFF1A2847);
+  // ── CATÉGORIES ────────────────────────────────────────────────────────────
+  static const Color catTransport  = Color(0xFF2196F3);
+  static const Color catFood       = Color(0xFFFF7043);
+  static const Color catLoyer      = Color(0xFF9C27B0);
+  static const Color catCharges    = Color(0xFFEF9F27);
+  static const Color catDivers     = Color(0xFF607D8B);
+  static const Color catEpargne    = Color(0xFF1D9E75);
+  static const Color catRevenu     = Color(0xFF0F6E56);
+
+  // ── LIGHT MODE SURFACES ───────────────────────────────────────────────────
+  static const Color lightBg       = Color(0xFFF0F9F5); // Fond général (blanc naturel)
+  static const Color lightBg2      = Color(0xFFE8F5EE); // Fond secondaire léger
+  static const Color lightSurface  = Color(0xFFFFFFFF); // Surface de carte
+  static const Color lightSurface2 = Color(0xFFF9FAFB); // Surface secondaire
+  static const Color lightBorder   = Color(0xFFD4EDE3); // Bordure subtile
+
+  // ── DARK MODE SURFACES ────────────────────────────────────────────────────
+  static const Color darkBg        = Color(0xFF0A1810); // Fond (vert-noir profond)
+  static const Color darkBg2       = Color(0xFF0F2419); // Fond secondaire
+  static const Color darkSurface   = Color(0xFF162B1F); // Surface de carte
+  static const Color darkSurface2  = Color(0xFF1E3A2B); // Surface secondaire
+  static const Color darkBorder    = Color(0xFF2D4A38); // Bordure subtile
+
+  // ── LIGHT MODE TEXTES ─────────────────────────────────────────────────────
+  static const Color lightText     = Color(0xFF0F2419); // Texte principal
+  static const Color lightTextSub  = Color(0xFF4A6E5E); // Texte secondaire
+  static const Color lightTextMuted= Color(0xFF9EC4B3); // Texte désactivé
+  static const Color lightTextOn   = Color(0xFFFFFFFF); // Sur fond vert
+
+  // ── DARK MODE TEXTES ──────────────────────────────────────────────────────
+  static const Color darkText      = Color(0xFFE8F5EE); // Texte principal
+  static const Color darkTextSub   = Color(0xFF7CB99A); // Texte secondaire
+  static const Color darkTextMuted = Color(0xFF4A7060); // Texte désactivé
+
+  // ── GLASS EFFECT ──────────────────────────────────────────────────────────
+  // Opacités recommandées par mode dans GlassCard
+  static double get glassOpacityLight => 0.75;
+  static double get glassOpacityDark  => 0.10;
+
+  // Retourne la couleur d'une catégorie de transaction
+  static Color forCategory(String category) {
+    switch (category.toLowerCase()) {
+      case 'transport':              return catTransport;
+      case 'food':
+      case 'alimentation':           return catFood;
+      case 'loyer':                  return catLoyer;
+      case 'charges':                return catCharges;
+      case 'epargne':
+      case 'épargne':                return catEpargne;
+      case 'revenu':
+      case 'income':                 return catRevenu;
+      default:                       return catDivers;
+    }
+  }
 }
 
+// ─── ESPACEMENT ─────────────────────────────────────────────────────────────
 class HezaSpacing {
-  static const double xs = 4.0;
-  static const double sm = 8.0;
-  static const double md = 12.0;
-  static const double lg = 16.0;
-  static const double xl = 24.0;
-  static const double xxl = 32.0;
+  HezaSpacing._();
+  static const double xs   = 4.0;
+  static const double sm   = 8.0;
+  static const double md   = 12.0;
+  static const double lg   = 16.0;
+  static const double xl   = 24.0;
+  static const double xxl  = 32.0;
   static const double xxxl = 48.0;
 }
 
-class HezaRadii {
-  static const double xs = 4.0;
-  static const double sm = 8.0;
-  static const double md = 12.0;
-  static const double lg = 16.0;
-  static const double xl = 20.0;
+// ─── BORDER RADIUS ──────────────────────────────────────────────────────────
+class HezaRadius {
+  HezaRadius._();
+  static const double xs   = 4.0;
+  static const double sm   = 8.0;
+  static const double md   = 12.0;
+  static const double lg   = 16.0;
+  static const double xl   = 20.0;
   static const double full = 99.0;
 }
 
+// ─── BLUR / GLASSMORPHISM ────────────────────────────────────────────────────
+class HezaBlur {
+  HezaBlur._();
+  static const double subtle  = 8.0;
+  static const double normal  = 15.0;
+  static const double strong  = 20.0;
+  static const double overlay = 25.0;
+}
+
+// ─── SHADOWS ────────────────────────────────────────────────────────────────
 class HezaShadows {
-  // Light mode shadows
+  HezaShadows._();
+
   static const List<BoxShadow> lightSm = [
-    BoxShadow(
-      color: Color(0x0A000000),
-      blurRadius: 2,
-      offset: Offset(0, 1),
-    ),
+    BoxShadow(color: Color(0x0A000000), blurRadius: 4, offset: Offset(0, 2)),
   ];
 
   static const List<BoxShadow> lightMd = [
-    BoxShadow(
-      color: Color(0x0A000000),
-      blurRadius: 4,
-      offset: Offset(0, 2),
-    ),
+    BoxShadow(color: Color(0x12000000), blurRadius: 8, offset: Offset(0, 4)),
   ];
 
   static const List<BoxShadow> lightLg = [
-    BoxShadow(
-      color: Color(0x0A000000),
-      blurRadius: 8,
-      offset: Offset(0, 4),
-    ),
+    BoxShadow(color: Color(0x1A000000), blurRadius: 16, offset: Offset(0, 6)),
   ];
 
-  // Dark mode glass shadows (subtle, no black)
-  static const List<BoxShadow> darkGlassInner = [
-    BoxShadow(
-      color: Color(0x33FFFFFF),
-      blurRadius: 16,
-      offset: Offset(0, 0),
-    ),
+  static const List<BoxShadow> darkSm = [
+    BoxShadow(color: Color(0x33000000), blurRadius: 8,  offset: Offset(0, 2)),
   ];
 
-  static const List<BoxShadow> darkGlassOuter = [
-    BoxShadow(
-      color: Color(0x1A000000),
-      blurRadius: 24,
-      offset: Offset(0, 8),
-    ),
+  static const List<BoxShadow> darkMd = [
+    BoxShadow(color: Color(0x40000000), blurRadius: 16, offset: Offset(0, 4)),
+  ];
+
+  static const List<BoxShadow> darkLg = [
+    BoxShadow(color: Color(0x55000000), blurRadius: 24, offset: Offset(0, 8)),
   ];
 }
 
-/// Classe pour gérer les couleurs en fonction du thème
-class ThemeColors {
+// ─── HELPER THÈME CONTEXTUEL ─────────────────────────────────────────────────
+// Usage: final t = HezaTheme.of(context);
+class HezaTheme {
   final bool isDark;
+  const HezaTheme({required this.isDark});
 
-  const ThemeColors({required this.isDark});
+  static HezaTheme of(BuildContext context) =>
+      HezaTheme(isDark: Theme.of(context).brightness == Brightness.dark);
 
-  Color get background =>
-      isDark ? HezaColors.darkBackground : HezaColors.lightBackground;
+  // Surfaces
+  Color get bg          => isDark ? HezaColors.darkBg        : HezaColors.lightBg;
+  Color get bg2         => isDark ? HezaColors.darkBg2       : HezaColors.lightBg2;
+  Color get surface     => isDark ? HezaColors.darkSurface   : HezaColors.lightSurface;
+  Color get surface2    => isDark ? HezaColors.darkSurface2  : HezaColors.lightSurface2;
+  Color get border      => isDark ? HezaColors.darkBorder    : HezaColors.lightBorder;
 
-  Color get surface =>
-      isDark ? HezaColors.darkSurface : HezaColors.lightSurface;
+  // Textes
+  Color get text        => isDark ? HezaColors.darkText      : HezaColors.lightText;
+  Color get textSub     => isDark ? HezaColors.darkTextSub   : HezaColors.lightTextSub;
+  Color get textMuted   => isDark ? HezaColors.darkTextMuted : HezaColors.lightTextMuted;
 
-  Color get surfaceAlt =>
-      isDark ? HezaColors.darkSurfaceAlt : HezaColors.lightSurfaceAlt;
+  // Primaire (adapté au mode)
+  Color get primary     => isDark ? HezaColors.primaryLight  : HezaColors.primary;
+  Color get accent      => isDark ? HezaColors.accentSoft    : HezaColors.accent;
 
-  Color get onSurface =>
-      isDark ? HezaColors.darkOnSurface : HezaColors.lightOnSurface;
+  // Glass
+  Color get glassBg     => isDark ? HezaColors.darkSurface   : HezaColors.lightSurface;
+  double get glassOpacity => isDark ? HezaColors.glassOpacityDark : HezaColors.glassOpacityLight;
 
-  Color get onSurfaceSecondary => isDark
-      ? HezaColors.darkOnSurfaceSecondary
-      : HezaColors.lightOnSurfaceSecondary;
+  // Bordure glassmorphique
+  Color get glassBorder  => isDark
+      ? HezaColors.accent.withValues(alpha: 0.15)
+      : HezaColors.primary.withValues(alpha: 0.15);
 
-  Color get border =>
-      isDark ? HezaColors.darkBorder : HezaColors.lightBorder;
-
-  // Glass effect color adapté au thème
-  Color get glassSurface =>
-      isDark ? HezaColors.glassDark : HezaColors.glassLight;
-
-  // Shadows adapté au thème
-  List<BoxShadow> get shadowSm =>
-      isDark ? HezaShadows.darkGlassOuter : HezaShadows.lightSm;
-
-  List<BoxShadow> get shadowMd =>
-      isDark ? HezaShadows.darkGlassOuter : HezaShadows.lightMd;
-
-  List<BoxShadow> get shadowLg =>
-      isDark ? HezaShadows.darkGlassOuter : HezaShadows.lightLg;
+  // Shadows
+  List<BoxShadow> get shadowSm => isDark ? HezaShadows.darkSm : HezaShadows.lightSm;
+  List<BoxShadow> get shadowMd => isDark ? HezaShadows.darkMd : HezaShadows.lightMd;
+  List<BoxShadow> get shadowLg => isDark ? HezaShadows.darkLg : HezaShadows.lightLg;
 }

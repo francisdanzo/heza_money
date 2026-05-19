@@ -17,6 +17,7 @@ part 'app_database.g.dart';
     UserProfile,
     LessonProgress,
     EarnedBadges,
+    CategoryBudgets,
   ],
   daos: [
     TransactionsDao,
@@ -24,35 +25,27 @@ part 'app_database.g.dart';
     UserProfileDao,
     LessonProgressDao,
     EarnedBadgesDao,
+    CategoryBudgetsDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
-  /// Version du schéma de la base de données
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
-  /// Migrations futures — vide pour la v1
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
       onCreate: (Migrator m) async {
-        // Création initiale de toutes les tables
         await m.createAll();
-
-        // Insertion du profil utilisateur par défaut
-        await into(userProfile).insert(
-          const UserProfileCompanion(
-            name: Value('Utilisateur'),
-            monthlySalary: Value(700000.0),
-            currency: Value('BIF'),
-            themeMode: Value(0),
-          ),
-        );
       },
       onUpgrade: (Migrator m, int from, int to) async {
-        // Migrations futures ici
+        if (from < 2) {
+          await m.addColumn(goals, goals.icon);
+          await m.addColumn(userProfile, userProfile.notificationsEnabled);
+          await m.createTable(categoryBudgets);
+        }
       },
     );
   }

@@ -20,10 +20,9 @@ class Goals extends Table {
   RealColumn get targetAmount => real()();
   RealColumn get currentAmount => real().withDefault(const Constant(0.0))();
   DateTimeColumn get deadline => dateTime()();
-  // Couleur hex → ex: '#1D9E75'
   TextColumn get color => text().withDefault(const Constant('#1D9E75'))();
+  TextColumn get icon => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
-  // true si l'objectif est atteint
   BoolColumn get isCompleted => boolean().withDefault(const Constant(false))();
 }
 
@@ -32,10 +31,18 @@ class UserProfile extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text().withLength(min: 1, max: 100)();
   RealColumn get monthlySalary => real().withDefault(const Constant(700000.0))();
-  // 'BIF', 'USD', 'EUR'
   TextColumn get currency => text().withDefault(const Constant('BIF'))();
-  // Mode sombre : 0=clair, 1=sombre, 2=système
   IntColumn get themeMode => integer().withDefault(const Constant(0))();
+  BoolColumn get notificationsEnabled => boolean().withDefault(const Constant(true))();
+}
+
+/// Limites budgétaires par catégorie (optionnelles, définies par l'utilisateur)
+class CategoryBudgets extends Table {
+  TextColumn get category => text().withLength(min: 1, max: 50)();
+  RealColumn get limitAmount => real()();
+
+  @override
+  Set<Column> get primaryKey => {category};
 }
 
 /// Progression des leçons financières

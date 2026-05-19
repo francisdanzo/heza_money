@@ -426,6 +426,11 @@ class $GoalsTable extends Goals with TableInfo<$GoalsTable, Goal> {
       type: DriftSqlType.string,
       requiredDuringInsert: false,
       defaultValue: const Constant('#1D9E75'));
+  static const VerificationMeta _iconMeta = const VerificationMeta('icon');
+  @override
+  late final GeneratedColumn<String> icon = GeneratedColumn<String>(
+      'icon', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _createdAtMeta =
       const VerificationMeta('createdAt');
   @override
@@ -450,6 +455,7 @@ class $GoalsTable extends Goals with TableInfo<$GoalsTable, Goal> {
         currentAmount,
         deadline,
         color,
+        icon,
         createdAt,
         isCompleted
       ];
@@ -496,6 +502,10 @@ class $GoalsTable extends Goals with TableInfo<$GoalsTable, Goal> {
       context.handle(
           _colorMeta, color.isAcceptableOrUnknown(data['color']!, _colorMeta));
     }
+    if (data.containsKey('icon')) {
+      context.handle(
+          _iconMeta, icon.isAcceptableOrUnknown(data['icon']!, _iconMeta));
+    }
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
@@ -529,6 +539,8 @@ class $GoalsTable extends Goals with TableInfo<$GoalsTable, Goal> {
           .read(DriftSqlType.dateTime, data['${effectivePrefix}deadline'])!,
       color: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}color'])!,
+      icon: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}icon']),
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       isCompleted: attachedDatabase.typeMapping
@@ -549,6 +561,7 @@ class Goal extends DataClass implements Insertable<Goal> {
   final double currentAmount;
   final DateTime deadline;
   final String color;
+  final String? icon;
   final DateTime createdAt;
   final bool isCompleted;
   const Goal(
@@ -558,6 +571,7 @@ class Goal extends DataClass implements Insertable<Goal> {
       required this.currentAmount,
       required this.deadline,
       required this.color,
+      this.icon,
       required this.createdAt,
       required this.isCompleted});
   @override
@@ -569,6 +583,9 @@ class Goal extends DataClass implements Insertable<Goal> {
     map['current_amount'] = Variable<double>(currentAmount);
     map['deadline'] = Variable<DateTime>(deadline);
     map['color'] = Variable<String>(color);
+    if (!nullToAbsent || icon != null) {
+      map['icon'] = Variable<String>(icon);
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['is_completed'] = Variable<bool>(isCompleted);
     return map;
@@ -582,6 +599,7 @@ class Goal extends DataClass implements Insertable<Goal> {
       currentAmount: Value(currentAmount),
       deadline: Value(deadline),
       color: Value(color),
+      icon: icon == null && nullToAbsent ? const Value.absent() : Value(icon),
       createdAt: Value(createdAt),
       isCompleted: Value(isCompleted),
     );
@@ -597,6 +615,7 @@ class Goal extends DataClass implements Insertable<Goal> {
       currentAmount: serializer.fromJson<double>(json['currentAmount']),
       deadline: serializer.fromJson<DateTime>(json['deadline']),
       color: serializer.fromJson<String>(json['color']),
+      icon: serializer.fromJson<String?>(json['icon']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       isCompleted: serializer.fromJson<bool>(json['isCompleted']),
     );
@@ -611,6 +630,7 @@ class Goal extends DataClass implements Insertable<Goal> {
       'currentAmount': serializer.toJson<double>(currentAmount),
       'deadline': serializer.toJson<DateTime>(deadline),
       'color': serializer.toJson<String>(color),
+      'icon': serializer.toJson<String?>(icon),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'isCompleted': serializer.toJson<bool>(isCompleted),
     };
@@ -623,6 +643,7 @@ class Goal extends DataClass implements Insertable<Goal> {
           double? currentAmount,
           DateTime? deadline,
           String? color,
+          Value<String?> icon = const Value.absent(),
           DateTime? createdAt,
           bool? isCompleted}) =>
       Goal(
@@ -632,6 +653,7 @@ class Goal extends DataClass implements Insertable<Goal> {
         currentAmount: currentAmount ?? this.currentAmount,
         deadline: deadline ?? this.deadline,
         color: color ?? this.color,
+        icon: icon.present ? icon.value : this.icon,
         createdAt: createdAt ?? this.createdAt,
         isCompleted: isCompleted ?? this.isCompleted,
       );
@@ -647,6 +669,7 @@ class Goal extends DataClass implements Insertable<Goal> {
           : this.currentAmount,
       deadline: data.deadline.present ? data.deadline.value : this.deadline,
       color: data.color.present ? data.color.value : this.color,
+      icon: data.icon.present ? data.icon.value : this.icon,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       isCompleted:
           data.isCompleted.present ? data.isCompleted.value : this.isCompleted,
@@ -662,6 +685,7 @@ class Goal extends DataClass implements Insertable<Goal> {
           ..write('currentAmount: $currentAmount, ')
           ..write('deadline: $deadline, ')
           ..write('color: $color, ')
+          ..write('icon: $icon, ')
           ..write('createdAt: $createdAt, ')
           ..write('isCompleted: $isCompleted')
           ..write(')'))
@@ -670,7 +694,7 @@ class Goal extends DataClass implements Insertable<Goal> {
 
   @override
   int get hashCode => Object.hash(id, title, targetAmount, currentAmount,
-      deadline, color, createdAt, isCompleted);
+      deadline, color, icon, createdAt, isCompleted);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -681,6 +705,7 @@ class Goal extends DataClass implements Insertable<Goal> {
           other.currentAmount == this.currentAmount &&
           other.deadline == this.deadline &&
           other.color == this.color &&
+          other.icon == this.icon &&
           other.createdAt == this.createdAt &&
           other.isCompleted == this.isCompleted);
 }
@@ -692,6 +717,7 @@ class GoalsCompanion extends UpdateCompanion<Goal> {
   final Value<double> currentAmount;
   final Value<DateTime> deadline;
   final Value<String> color;
+  final Value<String?> icon;
   final Value<DateTime> createdAt;
   final Value<bool> isCompleted;
   const GoalsCompanion({
@@ -701,6 +727,7 @@ class GoalsCompanion extends UpdateCompanion<Goal> {
     this.currentAmount = const Value.absent(),
     this.deadline = const Value.absent(),
     this.color = const Value.absent(),
+    this.icon = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.isCompleted = const Value.absent(),
   });
@@ -711,6 +738,7 @@ class GoalsCompanion extends UpdateCompanion<Goal> {
     this.currentAmount = const Value.absent(),
     required DateTime deadline,
     this.color = const Value.absent(),
+    this.icon = const Value.absent(),
     required DateTime createdAt,
     this.isCompleted = const Value.absent(),
   })  : title = Value(title),
@@ -724,6 +752,7 @@ class GoalsCompanion extends UpdateCompanion<Goal> {
     Expression<double>? currentAmount,
     Expression<DateTime>? deadline,
     Expression<String>? color,
+    Expression<String>? icon,
     Expression<DateTime>? createdAt,
     Expression<bool>? isCompleted,
   }) {
@@ -734,6 +763,7 @@ class GoalsCompanion extends UpdateCompanion<Goal> {
       if (currentAmount != null) 'current_amount': currentAmount,
       if (deadline != null) 'deadline': deadline,
       if (color != null) 'color': color,
+      if (icon != null) 'icon': icon,
       if (createdAt != null) 'created_at': createdAt,
       if (isCompleted != null) 'is_completed': isCompleted,
     });
@@ -746,6 +776,7 @@ class GoalsCompanion extends UpdateCompanion<Goal> {
       Value<double>? currentAmount,
       Value<DateTime>? deadline,
       Value<String>? color,
+      Value<String?>? icon,
       Value<DateTime>? createdAt,
       Value<bool>? isCompleted}) {
     return GoalsCompanion(
@@ -755,6 +786,7 @@ class GoalsCompanion extends UpdateCompanion<Goal> {
       currentAmount: currentAmount ?? this.currentAmount,
       deadline: deadline ?? this.deadline,
       color: color ?? this.color,
+      icon: icon ?? this.icon,
       createdAt: createdAt ?? this.createdAt,
       isCompleted: isCompleted ?? this.isCompleted,
     );
@@ -781,6 +813,9 @@ class GoalsCompanion extends UpdateCompanion<Goal> {
     if (color.present) {
       map['color'] = Variable<String>(color.value);
     }
+    if (icon.present) {
+      map['icon'] = Variable<String>(icon.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -799,6 +834,7 @@ class GoalsCompanion extends UpdateCompanion<Goal> {
           ..write('currentAmount: $currentAmount, ')
           ..write('deadline: $deadline, ')
           ..write('color: $color, ')
+          ..write('icon: $icon, ')
           ..write('createdAt: $createdAt, ')
           ..write('isCompleted: $isCompleted')
           ..write(')'))
@@ -853,9 +889,19 @@ class $UserProfileTable extends UserProfile
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultValue: const Constant(0));
+  static const VerificationMeta _notificationsEnabledMeta =
+      const VerificationMeta('notificationsEnabled');
+  @override
+  late final GeneratedColumn<bool> notificationsEnabled = GeneratedColumn<bool>(
+      'notifications_enabled', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("notifications_enabled" IN (0, 1))'),
+      defaultValue: const Constant(true));
   @override
   List<GeneratedColumn> get $columns =>
-      [id, name, monthlySalary, currency, themeMode];
+      [id, name, monthlySalary, currency, themeMode, notificationsEnabled];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -889,6 +935,12 @@ class $UserProfileTable extends UserProfile
       context.handle(_themeModeMeta,
           themeMode.isAcceptableOrUnknown(data['theme_mode']!, _themeModeMeta));
     }
+    if (data.containsKey('notifications_enabled')) {
+      context.handle(
+          _notificationsEnabledMeta,
+          notificationsEnabled.isAcceptableOrUnknown(
+              data['notifications_enabled']!, _notificationsEnabledMeta));
+    }
     return context;
   }
 
@@ -908,6 +960,8 @@ class $UserProfileTable extends UserProfile
           .read(DriftSqlType.string, data['${effectivePrefix}currency'])!,
       themeMode: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}theme_mode'])!,
+      notificationsEnabled: attachedDatabase.typeMapping.read(
+          DriftSqlType.bool, data['${effectivePrefix}notifications_enabled'])!,
     );
   }
 
@@ -923,12 +977,14 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
   final double monthlySalary;
   final String currency;
   final int themeMode;
+  final bool notificationsEnabled;
   const UserProfileData(
       {required this.id,
       required this.name,
       required this.monthlySalary,
       required this.currency,
-      required this.themeMode});
+      required this.themeMode,
+      required this.notificationsEnabled});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -937,6 +993,7 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
     map['monthly_salary'] = Variable<double>(monthlySalary);
     map['currency'] = Variable<String>(currency);
     map['theme_mode'] = Variable<int>(themeMode);
+    map['notifications_enabled'] = Variable<bool>(notificationsEnabled);
     return map;
   }
 
@@ -947,6 +1004,7 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
       monthlySalary: Value(monthlySalary),
       currency: Value(currency),
       themeMode: Value(themeMode),
+      notificationsEnabled: Value(notificationsEnabled),
     );
   }
 
@@ -959,6 +1017,8 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
       monthlySalary: serializer.fromJson<double>(json['monthlySalary']),
       currency: serializer.fromJson<String>(json['currency']),
       themeMode: serializer.fromJson<int>(json['themeMode']),
+      notificationsEnabled:
+          serializer.fromJson<bool>(json['notificationsEnabled']),
     );
   }
   @override
@@ -970,6 +1030,7 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
       'monthlySalary': serializer.toJson<double>(monthlySalary),
       'currency': serializer.toJson<String>(currency),
       'themeMode': serializer.toJson<int>(themeMode),
+      'notificationsEnabled': serializer.toJson<bool>(notificationsEnabled),
     };
   }
 
@@ -978,13 +1039,15 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
           String? name,
           double? monthlySalary,
           String? currency,
-          int? themeMode}) =>
+          int? themeMode,
+          bool? notificationsEnabled}) =>
       UserProfileData(
         id: id ?? this.id,
         name: name ?? this.name,
         monthlySalary: monthlySalary ?? this.monthlySalary,
         currency: currency ?? this.currency,
         themeMode: themeMode ?? this.themeMode,
+        notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
       );
   UserProfileData copyWithCompanion(UserProfileCompanion data) {
     return UserProfileData(
@@ -995,6 +1058,9 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
           : this.monthlySalary,
       currency: data.currency.present ? data.currency.value : this.currency,
       themeMode: data.themeMode.present ? data.themeMode.value : this.themeMode,
+      notificationsEnabled: data.notificationsEnabled.present
+          ? data.notificationsEnabled.value
+          : this.notificationsEnabled,
     );
   }
 
@@ -1005,13 +1071,15 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
           ..write('name: $name, ')
           ..write('monthlySalary: $monthlySalary, ')
           ..write('currency: $currency, ')
-          ..write('themeMode: $themeMode')
+          ..write('themeMode: $themeMode, ')
+          ..write('notificationsEnabled: $notificationsEnabled')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, monthlySalary, currency, themeMode);
+  int get hashCode => Object.hash(
+      id, name, monthlySalary, currency, themeMode, notificationsEnabled);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1020,7 +1088,8 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
           other.name == this.name &&
           other.monthlySalary == this.monthlySalary &&
           other.currency == this.currency &&
-          other.themeMode == this.themeMode);
+          other.themeMode == this.themeMode &&
+          other.notificationsEnabled == this.notificationsEnabled);
 }
 
 class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
@@ -1029,12 +1098,14 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
   final Value<double> monthlySalary;
   final Value<String> currency;
   final Value<int> themeMode;
+  final Value<bool> notificationsEnabled;
   const UserProfileCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.monthlySalary = const Value.absent(),
     this.currency = const Value.absent(),
     this.themeMode = const Value.absent(),
+    this.notificationsEnabled = const Value.absent(),
   });
   UserProfileCompanion.insert({
     this.id = const Value.absent(),
@@ -1042,6 +1113,7 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
     this.monthlySalary = const Value.absent(),
     this.currency = const Value.absent(),
     this.themeMode = const Value.absent(),
+    this.notificationsEnabled = const Value.absent(),
   }) : name = Value(name);
   static Insertable<UserProfileData> custom({
     Expression<int>? id,
@@ -1049,6 +1121,7 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
     Expression<double>? monthlySalary,
     Expression<String>? currency,
     Expression<int>? themeMode,
+    Expression<bool>? notificationsEnabled,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1056,6 +1129,8 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
       if (monthlySalary != null) 'monthly_salary': monthlySalary,
       if (currency != null) 'currency': currency,
       if (themeMode != null) 'theme_mode': themeMode,
+      if (notificationsEnabled != null)
+        'notifications_enabled': notificationsEnabled,
     });
   }
 
@@ -1064,13 +1139,15 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
       Value<String>? name,
       Value<double>? monthlySalary,
       Value<String>? currency,
-      Value<int>? themeMode}) {
+      Value<int>? themeMode,
+      Value<bool>? notificationsEnabled}) {
     return UserProfileCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
       monthlySalary: monthlySalary ?? this.monthlySalary,
       currency: currency ?? this.currency,
       themeMode: themeMode ?? this.themeMode,
+      notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
     );
   }
 
@@ -1092,6 +1169,9 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
     if (themeMode.present) {
       map['theme_mode'] = Variable<int>(themeMode.value);
     }
+    if (notificationsEnabled.present) {
+      map['notifications_enabled'] = Variable<bool>(notificationsEnabled.value);
+    }
     return map;
   }
 
@@ -1102,7 +1182,8 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
           ..write('name: $name, ')
           ..write('monthlySalary: $monthlySalary, ')
           ..write('currency: $currency, ')
-          ..write('themeMode: $themeMode')
+          ..write('themeMode: $themeMode, ')
+          ..write('notificationsEnabled: $notificationsEnabled')
           ..write(')'))
         .toString();
   }
@@ -1546,6 +1627,207 @@ class EarnedBadgesCompanion extends UpdateCompanion<EarnedBadge> {
   }
 }
 
+class $CategoryBudgetsTable extends CategoryBudgets
+    with TableInfo<$CategoryBudgetsTable, CategoryBudget> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CategoryBudgetsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _categoryMeta =
+      const VerificationMeta('category');
+  @override
+  late final GeneratedColumn<String> category = GeneratedColumn<String>(
+      'category', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 50),
+      type: DriftSqlType.string,
+      requiredDuringInsert: true);
+  static const VerificationMeta _limitAmountMeta =
+      const VerificationMeta('limitAmount');
+  @override
+  late final GeneratedColumn<double> limitAmount = GeneratedColumn<double>(
+      'limit_amount', aliasedName, false,
+      type: DriftSqlType.double, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [category, limitAmount];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'category_budgets';
+  @override
+  VerificationContext validateIntegrity(Insertable<CategoryBudget> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('category')) {
+      context.handle(_categoryMeta,
+          category.isAcceptableOrUnknown(data['category']!, _categoryMeta));
+    } else if (isInserting) {
+      context.missing(_categoryMeta);
+    }
+    if (data.containsKey('limit_amount')) {
+      context.handle(
+          _limitAmountMeta,
+          limitAmount.isAcceptableOrUnknown(
+              data['limit_amount']!, _limitAmountMeta));
+    } else if (isInserting) {
+      context.missing(_limitAmountMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {category};
+  @override
+  CategoryBudget map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CategoryBudget(
+      category: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}category'])!,
+      limitAmount: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}limit_amount'])!,
+    );
+  }
+
+  @override
+  $CategoryBudgetsTable createAlias(String alias) {
+    return $CategoryBudgetsTable(attachedDatabase, alias);
+  }
+}
+
+class CategoryBudget extends DataClass implements Insertable<CategoryBudget> {
+  final String category;
+  final double limitAmount;
+  const CategoryBudget({required this.category, required this.limitAmount});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['category'] = Variable<String>(category);
+    map['limit_amount'] = Variable<double>(limitAmount);
+    return map;
+  }
+
+  CategoryBudgetsCompanion toCompanion(bool nullToAbsent) {
+    return CategoryBudgetsCompanion(
+      category: Value(category),
+      limitAmount: Value(limitAmount),
+    );
+  }
+
+  factory CategoryBudget.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CategoryBudget(
+      category: serializer.fromJson<String>(json['category']),
+      limitAmount: serializer.fromJson<double>(json['limitAmount']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'category': serializer.toJson<String>(category),
+      'limitAmount': serializer.toJson<double>(limitAmount),
+    };
+  }
+
+  CategoryBudget copyWith({String? category, double? limitAmount}) =>
+      CategoryBudget(
+        category: category ?? this.category,
+        limitAmount: limitAmount ?? this.limitAmount,
+      );
+  CategoryBudget copyWithCompanion(CategoryBudgetsCompanion data) {
+    return CategoryBudget(
+      category: data.category.present ? data.category.value : this.category,
+      limitAmount:
+          data.limitAmount.present ? data.limitAmount.value : this.limitAmount,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CategoryBudget(')
+          ..write('category: $category, ')
+          ..write('limitAmount: $limitAmount')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(category, limitAmount);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CategoryBudget &&
+          other.category == this.category &&
+          other.limitAmount == this.limitAmount);
+}
+
+class CategoryBudgetsCompanion extends UpdateCompanion<CategoryBudget> {
+  final Value<String> category;
+  final Value<double> limitAmount;
+  final Value<int> rowid;
+  const CategoryBudgetsCompanion({
+    this.category = const Value.absent(),
+    this.limitAmount = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CategoryBudgetsCompanion.insert({
+    required String category,
+    required double limitAmount,
+    this.rowid = const Value.absent(),
+  })  : category = Value(category),
+        limitAmount = Value(limitAmount);
+  static Insertable<CategoryBudget> custom({
+    Expression<String>? category,
+    Expression<double>? limitAmount,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (category != null) 'category': category,
+      if (limitAmount != null) 'limit_amount': limitAmount,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CategoryBudgetsCompanion copyWith(
+      {Value<String>? category,
+      Value<double>? limitAmount,
+      Value<int>? rowid}) {
+    return CategoryBudgetsCompanion(
+      category: category ?? this.category,
+      limitAmount: limitAmount ?? this.limitAmount,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (category.present) {
+      map['category'] = Variable<String>(category.value);
+    }
+    if (limitAmount.present) {
+      map['limit_amount'] = Variable<double>(limitAmount.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CategoryBudgetsCompanion(')
+          ..write('category: $category, ')
+          ..write('limitAmount: $limitAmount, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1554,6 +1836,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $UserProfileTable userProfile = $UserProfileTable(this);
   late final $LessonProgressTable lessonProgress = $LessonProgressTable(this);
   late final $EarnedBadgesTable earnedBadges = $EarnedBadgesTable(this);
+  late final $CategoryBudgetsTable categoryBudgets =
+      $CategoryBudgetsTable(this);
   late final TransactionsDao transactionsDao =
       TransactionsDao(this as AppDatabase);
   late final GoalsDao goalsDao = GoalsDao(this as AppDatabase);
@@ -1563,12 +1847,20 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       LessonProgressDao(this as AppDatabase);
   late final EarnedBadgesDao earnedBadgesDao =
       EarnedBadgesDao(this as AppDatabase);
+  late final CategoryBudgetsDao categoryBudgetsDao =
+      CategoryBudgetsDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [transactions, goals, userProfile, lessonProgress, earnedBadges];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+        transactions,
+        goals,
+        userProfile,
+        lessonProgress,
+        earnedBadges,
+        categoryBudgets
+      ];
 }
 
 typedef $$TransactionsTableCreateCompanionBuilder = TransactionsCompanion
@@ -1775,6 +2067,7 @@ typedef $$GoalsTableCreateCompanionBuilder = GoalsCompanion Function({
   Value<double> currentAmount,
   required DateTime deadline,
   Value<String> color,
+  Value<String?> icon,
   required DateTime createdAt,
   Value<bool> isCompleted,
 });
@@ -1785,6 +2078,7 @@ typedef $$GoalsTableUpdateCompanionBuilder = GoalsCompanion Function({
   Value<double> currentAmount,
   Value<DateTime> deadline,
   Value<String> color,
+  Value<String?> icon,
   Value<DateTime> createdAt,
   Value<bool> isCompleted,
 });
@@ -1814,6 +2108,9 @@ class $$GoalsTableFilterComposer extends Composer<_$AppDatabase, $GoalsTable> {
 
   ColumnFilters<String> get color => $composableBuilder(
       column: $table.color, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get icon => $composableBuilder(
+      column: $table.icon, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
@@ -1851,6 +2148,9 @@ class $$GoalsTableOrderingComposer
   ColumnOrderings<String> get color => $composableBuilder(
       column: $table.color, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get icon => $composableBuilder(
+      column: $table.icon, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 
@@ -1884,6 +2184,9 @@ class $$GoalsTableAnnotationComposer
 
   GeneratedColumn<String> get color =>
       $composableBuilder(column: $table.color, builder: (column) => column);
+
+  GeneratedColumn<String> get icon =>
+      $composableBuilder(column: $table.icon, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -1921,6 +2224,7 @@ class $$GoalsTableTableManager extends RootTableManager<
             Value<double> currentAmount = const Value.absent(),
             Value<DateTime> deadline = const Value.absent(),
             Value<String> color = const Value.absent(),
+            Value<String?> icon = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<bool> isCompleted = const Value.absent(),
           }) =>
@@ -1931,6 +2235,7 @@ class $$GoalsTableTableManager extends RootTableManager<
             currentAmount: currentAmount,
             deadline: deadline,
             color: color,
+            icon: icon,
             createdAt: createdAt,
             isCompleted: isCompleted,
           ),
@@ -1941,6 +2246,7 @@ class $$GoalsTableTableManager extends RootTableManager<
             Value<double> currentAmount = const Value.absent(),
             required DateTime deadline,
             Value<String> color = const Value.absent(),
+            Value<String?> icon = const Value.absent(),
             required DateTime createdAt,
             Value<bool> isCompleted = const Value.absent(),
           }) =>
@@ -1951,6 +2257,7 @@ class $$GoalsTableTableManager extends RootTableManager<
             currentAmount: currentAmount,
             deadline: deadline,
             color: color,
+            icon: icon,
             createdAt: createdAt,
             isCompleted: isCompleted,
           ),
@@ -1980,6 +2287,7 @@ typedef $$UserProfileTableCreateCompanionBuilder = UserProfileCompanion
   Value<double> monthlySalary,
   Value<String> currency,
   Value<int> themeMode,
+  Value<bool> notificationsEnabled,
 });
 typedef $$UserProfileTableUpdateCompanionBuilder = UserProfileCompanion
     Function({
@@ -1988,6 +2296,7 @@ typedef $$UserProfileTableUpdateCompanionBuilder = UserProfileCompanion
   Value<double> monthlySalary,
   Value<String> currency,
   Value<int> themeMode,
+  Value<bool> notificationsEnabled,
 });
 
 class $$UserProfileTableFilterComposer
@@ -2013,6 +2322,10 @@ class $$UserProfileTableFilterComposer
 
   ColumnFilters<int> get themeMode => $composableBuilder(
       column: $table.themeMode, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get notificationsEnabled => $composableBuilder(
+      column: $table.notificationsEnabled,
+      builder: (column) => ColumnFilters(column));
 }
 
 class $$UserProfileTableOrderingComposer
@@ -2039,6 +2352,10 @@ class $$UserProfileTableOrderingComposer
 
   ColumnOrderings<int> get themeMode => $composableBuilder(
       column: $table.themeMode, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get notificationsEnabled => $composableBuilder(
+      column: $table.notificationsEnabled,
+      builder: (column) => ColumnOrderings(column));
 }
 
 class $$UserProfileTableAnnotationComposer
@@ -2064,6 +2381,9 @@ class $$UserProfileTableAnnotationComposer
 
   GeneratedColumn<int> get themeMode =>
       $composableBuilder(column: $table.themeMode, builder: (column) => column);
+
+  GeneratedColumn<bool> get notificationsEnabled => $composableBuilder(
+      column: $table.notificationsEnabled, builder: (column) => column);
 }
 
 class $$UserProfileTableTableManager extends RootTableManager<
@@ -2097,6 +2417,7 @@ class $$UserProfileTableTableManager extends RootTableManager<
             Value<double> monthlySalary = const Value.absent(),
             Value<String> currency = const Value.absent(),
             Value<int> themeMode = const Value.absent(),
+            Value<bool> notificationsEnabled = const Value.absent(),
           }) =>
               UserProfileCompanion(
             id: id,
@@ -2104,6 +2425,7 @@ class $$UserProfileTableTableManager extends RootTableManager<
             monthlySalary: monthlySalary,
             currency: currency,
             themeMode: themeMode,
+            notificationsEnabled: notificationsEnabled,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -2111,6 +2433,7 @@ class $$UserProfileTableTableManager extends RootTableManager<
             Value<double> monthlySalary = const Value.absent(),
             Value<String> currency = const Value.absent(),
             Value<int> themeMode = const Value.absent(),
+            Value<bool> notificationsEnabled = const Value.absent(),
           }) =>
               UserProfileCompanion.insert(
             id: id,
@@ -2118,6 +2441,7 @@ class $$UserProfileTableTableManager extends RootTableManager<
             monthlySalary: monthlySalary,
             currency: currency,
             themeMode: themeMode,
+            notificationsEnabled: notificationsEnabled,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -2413,6 +2737,135 @@ typedef $$EarnedBadgesTableProcessedTableManager = ProcessedTableManager<
     ),
     EarnedBadge,
     PrefetchHooks Function()>;
+typedef $$CategoryBudgetsTableCreateCompanionBuilder = CategoryBudgetsCompanion
+    Function({
+  required String category,
+  required double limitAmount,
+  Value<int> rowid,
+});
+typedef $$CategoryBudgetsTableUpdateCompanionBuilder = CategoryBudgetsCompanion
+    Function({
+  Value<String> category,
+  Value<double> limitAmount,
+  Value<int> rowid,
+});
+
+class $$CategoryBudgetsTableFilterComposer
+    extends Composer<_$AppDatabase, $CategoryBudgetsTable> {
+  $$CategoryBudgetsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get category => $composableBuilder(
+      column: $table.category, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get limitAmount => $composableBuilder(
+      column: $table.limitAmount, builder: (column) => ColumnFilters(column));
+}
+
+class $$CategoryBudgetsTableOrderingComposer
+    extends Composer<_$AppDatabase, $CategoryBudgetsTable> {
+  $$CategoryBudgetsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get category => $composableBuilder(
+      column: $table.category, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get limitAmount => $composableBuilder(
+      column: $table.limitAmount, builder: (column) => ColumnOrderings(column));
+}
+
+class $$CategoryBudgetsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CategoryBudgetsTable> {
+  $$CategoryBudgetsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => column);
+
+  GeneratedColumn<double> get limitAmount => $composableBuilder(
+      column: $table.limitAmount, builder: (column) => column);
+}
+
+class $$CategoryBudgetsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $CategoryBudgetsTable,
+    CategoryBudget,
+    $$CategoryBudgetsTableFilterComposer,
+    $$CategoryBudgetsTableOrderingComposer,
+    $$CategoryBudgetsTableAnnotationComposer,
+    $$CategoryBudgetsTableCreateCompanionBuilder,
+    $$CategoryBudgetsTableUpdateCompanionBuilder,
+    (
+      CategoryBudget,
+      BaseReferences<_$AppDatabase, $CategoryBudgetsTable, CategoryBudget>
+    ),
+    CategoryBudget,
+    PrefetchHooks Function()> {
+  $$CategoryBudgetsTableTableManager(
+      _$AppDatabase db, $CategoryBudgetsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CategoryBudgetsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CategoryBudgetsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CategoryBudgetsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> category = const Value.absent(),
+            Value<double> limitAmount = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              CategoryBudgetsCompanion(
+            category: category,
+            limitAmount: limitAmount,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String category,
+            required double limitAmount,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              CategoryBudgetsCompanion.insert(
+            category: category,
+            limitAmount: limitAmount,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$CategoryBudgetsTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $CategoryBudgetsTable,
+    CategoryBudget,
+    $$CategoryBudgetsTableFilterComposer,
+    $$CategoryBudgetsTableOrderingComposer,
+    $$CategoryBudgetsTableAnnotationComposer,
+    $$CategoryBudgetsTableCreateCompanionBuilder,
+    $$CategoryBudgetsTableUpdateCompanionBuilder,
+    (
+      CategoryBudget,
+      BaseReferences<_$AppDatabase, $CategoryBudgetsTable, CategoryBudget>
+    ),
+    CategoryBudget,
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2427,4 +2880,6 @@ class $AppDatabaseManager {
       $$LessonProgressTableTableManager(_db, _db.lessonProgress);
   $$EarnedBadgesTableTableManager get earnedBadges =>
       $$EarnedBadgesTableTableManager(_db, _db.earnedBadges);
+  $$CategoryBudgetsTableTableManager get categoryBudgets =>
+      $$CategoryBudgetsTableTableManager(_db, _db.categoryBudgets);
 }

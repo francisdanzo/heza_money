@@ -1,39 +1,54 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:drift/drift.dart' show Value;
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_text_styles.dart';
-import '../../core/theme/app_theme.dart';
-import '../../core/utils/formatters.dart';
+import '../../core/theme/design_tokens.dart';
+import '../../core/utils/formatters.dart' show AppFormatters, ThousandsSeparatorFormatter;
+import '../../core/widgets/glass_components.dart';
 import '../../data/database/app_database.dart';
 import '../../shared/providers/database_providers.dart';
 
-/// Couleurs disponibles pour les objectifs
 const _goalColors = [
-  '#1D9E75', // vert action
-  '#0F6E56', // vert profond
-  '#EF9F27', // or
-  '#2196F3', // bleu
-  '#9C27B0', // violet
-  '#E53935', // rouge
-  '#607D8B', // gris bleu
-  '#FF7043', // orange
+  '#1D9E75',
+  '#0F6E56',
+  '#EF9F27',
+  '#2196F3',
+  '#9C27B0',
+  '#E53935',
+  '#607D8B',
+  '#FF7043',
 ];
 
-/// Écran de création d'un objectif d'épargne
 class AddGoalScreen extends ConsumerStatefulWidget {
-  const AddGoalScreen({super.key});
+  final Goal? goal; // null = création, non-null = édition
+  const AddGoalScreen({super.key, this.goal});
 
   @override
   ConsumerState<AddGoalScreen> createState() => _AddGoalScreenState();
 }
 
 class _AddGoalScreenState extends ConsumerState<AddGoalScreen> {
-  final _titleController = TextEditingController();
+  final _titleController  = TextEditingController();
   final _targetController = TextEditingController();
-  DateTime _deadline = DateTime.now().add(const Duration(days: 180));
-  String _selectedColor = _goalColors[0];
-  bool _loading = false;
+  DateTime _deadline      = DateTime.now().add(const Duration(days: 180));
+  String _selectedColor   = _goalColors[0];
+  bool _loading           = false;
+
+  bool get _isEditing => widget.goal != null;
+  bool _isDirty = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final g = widget.goal;
+    if (g != null) {
+      _titleController.text  = g.title;
+      _targetController.text = g.targetAmount.toStringAsFixed(0);
+      _deadline              = g.deadline;
+      _selectedColor         = g.color;
+    }
+  }
 
   @override
   void dispose() {
@@ -44,39 +59,41 @@ class _AddGoalScreenState extends ConsumerState<AddGoalScreen> {
 
   Future<void> _save() async {
     final title = _titleController.text.trim();
-    if (title.isEmpty) {
-      _showError('Donne un nom à ton objectif');
-      return;
-    }
+    if (title.isEmpty) { _showError('Donne un nom à ton objectif'); return; }
     final targetText = _targetController.text.replaceAll(' ', '');
     final target = double.tryParse(targetText);
-    if (target == null || target <= 0) {
-      _showError('Saisis un montant cible valide');
-      return;
-    }
+    if (target == null || target <= 0) { _showError('Saisis un montant cible valide'); return; }
 
     setState(() => _loading = true);
     try {
-      await ref.read(goalsDaoProvider).addGoal(
-            GoalsCompanion(
-              title: Value(title),
-              targetAmount: Value(target),
-              currentAmount: const Value(0.0),
-              deadline: Value(_deadline),
-              color: Value(_selectedColor),
-              createdAt: Value(DateTime.now()),
-            ),
-          );
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Objectif "$title" créé 💚'),
-            backgroundColor: AppColors.action,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppTheme.radiusButton)),
+      if (_isEditing) {
+        await ref.read(goalsDaoProvider).updateGoal(
+          widget.goal!.copyWith(
+            title:        title,
+            targetAmount: target,
+            deadline:     _deadline,
+            color:        _selectedColor,
           ),
         );
+      } else {
+        await ref.read(goalsDaoProvider).addGoal(
+          GoalsCompanion(
+            title:         Value(title),
+            targetAmount:  Value(target),
+            currentAmount: const Value(0.0),
+            deadline:      Value(_deadline),
+            color:         Value(_selectedColor),
+            createdAt:     Value(DateTime.now()),
+          ),
+        );
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(_isEditing ? 'Objectif modifié' : 'Objectif "$title" créé'),
+          backgroundColor: HezaColors.primaryLight,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(HezaRadius.md)),
+        ));
         Navigator.of(context).pop();
       }
     } catch (e) {
@@ -89,11 +106,12 @@ class _AddGoalScreenState extends ConsumerState<AddGoalScreen> {
   void _showError(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(msg),
-      backgroundColor: AppColors.error,
+      backgroundColor: HezaColors.error,
     ));
   }
 
   Future<void> _pickDeadline() async {
+    final t = HezaTheme.of(context);
     final picked = await showDatePicker(
       context: context,
       initialDate: _deadline,
@@ -102,120 +120,144 @@ class _AddGoalScreenState extends ConsumerState<AddGoalScreen> {
       locale: const Locale('fr'),
       builder: (context, child) => Theme(
         data: Theme.of(context).copyWith(
-          colorScheme: const ColorScheme.light(primary: AppColors.primary),
+          colorScheme: ColorScheme.light(primary: t.primary, onPrimary: Colors.white),
         ),
         child: child!,
       ),
     );
-    if (picked != null) setState(() => _deadline = picked);
+    if (picked != null) setState(() { _deadline = picked; _isDirty = true; });
   }
 
   @override
   Widget build(BuildContext context) {
-    final currency =
-        ref.watch(userProfileProvider).value?.currency ?? 'BIF';
-    final selectedColorVal =
-        Color(int.parse(_selectedColor.replaceFirst('#', '0xFF')));
-    final monthsLeft = AppFormatters.monthsUntil(_deadline);
-    final targetText = _targetController.text.replaceAll(' ', '');
-    final target = double.tryParse(targetText) ?? 0;
-    final monthly = monthsLeft > 0 ? target / monthsLeft : target;
+    final t              = HezaTheme.of(context);
+    final currency       = ref.watch(userProfileProvider).value?.currency ?? 'BIF';
+    final selectedColor  = Color(int.parse(_selectedColor.replaceFirst('#', '0xFF')));
+    final monthsLeft     = AppFormatters.monthsUntil(_deadline);
+    final targetText     = _targetController.text.replaceAll(' ', '');
+    final target         = double.tryParse(targetText) ?? 0;
+    final monthly        = monthsLeft > 0 ? target / monthsLeft : target;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Nouvel objectif'),
+    return PopScope(
+      canPop: !_isDirty,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text('Abandonner ?', style: TextStyle(fontFamily: 'Inter', fontSize: 16, fontWeight: FontWeight.w600, color: HezaTheme.of(ctx).text)),
+            content: Text('Les modifications non enregistrées seront perdues.', style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: HezaTheme.of(ctx).textSub)),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Continuer')),
+              ElevatedButton(onPressed: () => Navigator.pop(ctx, true), style: ElevatedButton.styleFrom(backgroundColor: HezaColors.error), child: const Text('Abandonner')),
+            ],
+          ),
+        );
+        if (confirmed == true && context.mounted) Navigator.of(context).pop();
+      },
+      child: Scaffold(
+      appBar: GlassAppBar(
+        title: _isEditing ? 'Modifier l\'objectif' : 'Nouvel objectif',
         leading: IconButton(
-          icon: const Icon(Icons.close_rounded),
+          icon: const Icon(Icons.close_rounded, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppTheme.paddingPage),
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Aperçu de la couleur
+              // ── Preview icon ─────────────────────────────────────────────
               Center(
-                child: Container(
-                  width: 80,
-                  height: 80,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 88,
+                  height: 88,
                   decoration: BoxDecoration(
-                    color: selectedColorVal.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(20),
+                    color: selectedColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(HezaRadius.lg),
+                    border: Border.all(color: selectedColor.withValues(alpha: 0.4), width: 2),
+                    boxShadow: [BoxShadow(color: selectedColor.withValues(alpha: 0.25), blurRadius: 16, offset: const Offset(0, 4))],
                   ),
-                  child: Icon(Icons.flag_rounded,
-                      color: selectedColorVal, size: 40),
+                  child: Icon(Icons.flag_rounded, color: selectedColor, size: 44),
+                ),
+              ),
+              const SizedBox(height: 28),
+
+              // ── Nom ──────────────────────────────────────────────────────
+              Text('Nom de l\'objectif', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w500, color: t.textSub)),
+              const SizedBox(height: 8),
+              _GlassTextField(
+                controller: _titleController,
+                hintText: 'Ex: Nouveau téléphone, Voyage, Voiture...',
+                t: t,
+                onChanged: (_) => setState(() => _isDirty = true),
+              ),
+              const SizedBox(height: 20),
+
+              // ── Montant cible ─────────────────────────────────────────────
+              Text('Montant cible', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w500, color: t.textSub)),
+              const SizedBox(height: 8),
+              _GlassTextField(
+                controller: _targetController,
+                hintText: '0',
+                suffixText: currency,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly, ThousandsSeparatorFormatter()],
+                t: t,
+                onChanged: (_) => setState(() => _isDirty = true),
+              ),
+              const SizedBox(height: 20),
+
+              // ── Échéance ─────────────────────────────────────────────────
+              Text('Échéance', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w500, color: t.textSub)),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: _pickDeadline,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(HezaRadius.md),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: t.glassBg.withValues(alpha: t.isDark ? 0.15 : 0.6),
+                        borderRadius: BorderRadius.circular(HezaRadius.md),
+                        border: Border.all(color: t.glassBorder, width: 1),
+                      ),
+                      child: Row(children: [
+                        Icon(Icons.calendar_today_rounded, size: 18, color: t.primary),
+                        const SizedBox(width: 10),
+                        Text(AppFormatters.formatDateMedium(_deadline), style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: t.text)),
+                        const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: t.primary.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(HezaRadius.full),
+                          ),
+                          child: Text('$monthsLeft mois', style: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w600, color: t.primary)),
+                        ),
+                      ]),
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
 
-              // Nom de l'objectif
-              const Text('Nom de l\'objectif', style: AppTextStyles.titleMedium),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _titleController,
-                decoration: const InputDecoration(
-                  hintText: 'Ex: Nouveau téléphone, Voyage, Voiture...',
-                ),
-                onChanged: (_) => setState(() {}),
-              ),
-              const SizedBox(height: 20),
-
-              // Montant cible
-              const Text('Montant cible', style: AppTextStyles.titleMedium),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _targetController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  hintText: '0',
-                  suffixText: currency,
-                ),
-                onChanged: (_) => setState(() {}),
-              ),
-              const SizedBox(height: 20),
-
-              // Échéance
-              const Text('Échéance', style: AppTextStyles.titleMedium),
-              const SizedBox(height: 8),
-              GestureDetector(
-                onTap: _pickDeadline,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 14),
-                  decoration: BoxDecoration(
-                    color: AppColors.inputBackground,
-                    borderRadius: BorderRadius.circular(AppTheme.radiusInput),
-                    border: Border.all(color: AppColors.divider),
-                  ),
-                  child: Row(children: [
-                    const Icon(Icons.calendar_today_rounded,
-                        size: 18, color: AppColors.textSecondary),
-                    const SizedBox(width: 10),
-                    Text(AppFormatters.formatDateMedium(_deadline),
-                        style: AppTextStyles.bodyMedium),
-                    const Spacer(),
-                    Text('$monthsLeft mois',
-                        style: AppTextStyles.labelMedium
-                            .copyWith(color: AppColors.action)),
-                  ]),
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // Couleur
-              const Text('Couleur', style: AppTextStyles.titleMedium),
-              const SizedBox(height: 10),
+              // ── Couleur ──────────────────────────────────────────────────
+              Text('Couleur', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w500, color: t.textSub)),
+              const SizedBox(height: 12),
               Wrap(
                 spacing: 10,
                 runSpacing: 10,
                 children: _goalColors.map((hex) {
-                  final color =
-                      Color(int.parse(hex.replaceFirst('#', '0xFF')));
+                  final color    = Color(int.parse(hex.replaceFirst('#', '0xFF')));
                   final selected = hex == _selectedColor;
                   return GestureDetector(
-                    onTap: () => setState(() => _selectedColor = hex),
+                    onTap: () => setState(() { _selectedColor = hex; _isDirty = true; }),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 150),
                       width: 40,
@@ -223,70 +265,106 @@ class _AddGoalScreenState extends ConsumerState<AddGoalScreen> {
                       decoration: BoxDecoration(
                         color: color,
                         shape: BoxShape.circle,
-                        border: selected
-                            ? Border.all(
-                                color: AppColors.textPrimary, width: 3)
-                            : null,
+                        border: selected ? Border.all(color: Colors.white, width: 3) : null,
                         boxShadow: selected
-                            ? [
-                                BoxShadow(
-                                    color: color.withValues(alpha: 0.4),
-                                    blurRadius: 8)
-                              ]
+                            ? [BoxShadow(color: color.withValues(alpha: 0.5), blurRadius: 10, spreadRadius: 1)]
                             : null,
                       ),
                       child: selected
-                          ? const Icon(Icons.check_rounded,
-                              color: Colors.white, size: 20)
+                          ? const Icon(Icons.check_rounded, color: Colors.white, size: 20)
                           : null,
                     ),
                   );
                 }).toList(),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
-              // Calcul automatique
-              if (target > 0 && monthsLeft > 0)
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryLight,
-                    borderRadius:
-                        BorderRadius.circular(AppTheme.radiusCard),
-                  ),
+              // ── Calcul automatique ────────────────────────────────────────
+              if (target > 0 && monthsLeft > 0) ...[
+                GlassCard(
+                  tintColor: t.primary,
+                  opacity: t.isDark ? 0.10 : 0.08,
+                  border: Border.all(color: t.primary.withValues(alpha: 0.25), width: 1),
                   child: Row(children: [
-                    const Icon(Icons.lightbulb_outline_rounded,
-                        color: AppColors.primary, size: 20),
+                    Icon(Icons.lightbulb_outline_rounded, size: 18, color: t.primary),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         'Tu dois épargner ${AppFormatters.formatAmount(monthly, currency: currency)}/mois pendant $monthsLeft mois',
-                        style: AppTextStyles.bodySmall
-                            .copyWith(color: AppColors.primary),
+                        style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: t.primary),
                       ),
                     ),
                   ]),
                 ),
-              const SizedBox(height: 32),
+                const SizedBox(height: 24),
+              ],
 
+              // ── Bouton créer ──────────────────────────────────────────────
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
+                child: GlassButton(
+                  label: _isEditing ? 'Enregistrer' : 'Créer l\'objectif',
                   onPressed: _loading ? null : _save,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: _loading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                              color: Colors.white, strokeWidth: 2),
-                        )
-                      : const Text('Créer l\'objectif'),
+                  isLoading: _loading,
+                  fullWidth: true,
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+      ),
+    );
+  }
+}
+
+// ── Reusable glass text field ─────────────────────────────────────────────────
+class _GlassTextField extends StatelessWidget {
+  final TextEditingController controller;
+  final String hintText;
+  final String? suffixText;
+  final TextInputType keyboardType;
+  final HezaTheme t;
+  final ValueChanged<String>? onChanged;
+  final List<TextInputFormatter>? inputFormatters;
+
+  const _GlassTextField({
+    required this.controller,
+    required this.hintText,
+    required this.t,
+    this.suffixText,
+    this.keyboardType = TextInputType.text,
+    this.onChanged,
+    this.inputFormatters,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(HezaRadius.md),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        child: Container(
+          decoration: BoxDecoration(
+            color: t.glassBg.withValues(alpha: t.isDark ? 0.15 : 0.6),
+            borderRadius: BorderRadius.circular(HezaRadius.md),
+            border: Border.all(color: t.glassBorder, width: 1),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          child: TextField(
+            controller: controller,
+            keyboardType: keyboardType,
+            inputFormatters: inputFormatters,
+            onChanged: onChanged,
+            style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: t.text),
+            decoration: InputDecoration(
+              hintText: hintText,
+              suffixText: suffixText,
+              hintStyle: TextStyle(fontFamily: 'Inter', fontSize: 14, color: t.textMuted),
+              suffixStyle: TextStyle(fontFamily: 'Inter', fontSize: 14, color: t.textSub),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(vertical: 12),
+            ),
           ),
         ),
       ),
