@@ -206,16 +206,9 @@ class _LoadingScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Image.asset('assets/logo/logo.png', width: 72, height: 72),
+            const SizedBox(height: 20),
             const CircularProgressIndicator(color: Colors.white),
-            const SizedBox(height: 16),
-            Text(
-              'Chargement...',
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 14,
-                color: Colors.white.withValues(alpha: 0.8),
-              ),
-            ),
           ],
         ),
       ),

@@ -90,14 +90,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 // ── Logo ────────────────────────────────────────────────────
                 Center(
                   child: Column(children: [
-                    Container(
-                      width: 80, height: 80,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1),
-                      ),
-                      child: const Icon(Icons.savings_rounded, color: Colors.white, size: 40),
+                    Image.asset(
+                      'assets/logo/logo.png',
+                      width: 90,
+                      height: 90,
                     ),
                     const SizedBox(height: 16),
                     const Text(
