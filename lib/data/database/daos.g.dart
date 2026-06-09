@@ -21,3 +21,6 @@ mixin _$EarnedBadgesDaoMixin on DatabaseAccessor<AppDatabase> {
 mixin _$CategoryBudgetsDaoMixin on DatabaseAccessor<AppDatabase> {
   $CategoryBudgetsTable get categoryBudgets => attachedDatabase.categoryBudgets;
 }
+mixin _$AccountsDaoMixin on DatabaseAccessor<AppDatabase> {
+  $AccountsTable get accounts => attachedDatabase.accounts;
+}

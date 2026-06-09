@@ -41,9 +41,14 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
   ];
 
   static const _incomeCategories = [
-    ('revenu', 'Salaire', Icons.work_rounded),
-    ('revenu', 'Prime',   Icons.star_rounded),
-    ('revenu', 'Autre',   Icons.trending_up_rounded),
+    ('salaire',      'Salaire',        Icons.work_rounded),
+    ('freelance',    'Freelance',      Icons.laptop_mac_rounded),
+    ('location',     'Location',       Icons.house_rounded),
+    ('prime',        'Prime/Bonus',    Icons.star_rounded),
+    ('pension',      'Pension',        Icons.elderly_rounded),
+    ('transfert_recu','Transfert reçu',Icons.call_received_rounded),
+    ('cadeau',       'Cadeau/Don',     Icons.card_giftcard_rounded),
+    ('autre_revenu', 'Autre revenu',   Icons.trending_up_rounded),
   ];
 
   @override
@@ -58,7 +63,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
       _noteController.text   = tx.note ?? '';
     } else {
       _type     = widget.initialType;
-      _category = _type == 'income' ? 'revenu' : 'divers';
+      _category = _type == 'income' ? 'salaire' : 'divers';
     }
   }
 
@@ -290,7 +295,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
       child: GestureDetector(
         onTap: () => setState(() {
           _type     = type;
-          _category = type == 'income' ? 'revenu' : 'divers';
+          _category = type == 'income' ? 'salaire' : 'divers';
           _isDirty  = true;
         }),
         child: AnimatedContainer(

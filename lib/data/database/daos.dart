@@ -381,3 +381,52 @@ class CategoryBudgetsDao extends DatabaseAccessor<AppDatabase>
 
   Future<int> deleteAll() => delete(db.categoryBudgets).go();
 }
+
+/// DAO pour les comptes (banque, mobile money, cash)
+@DriftAccessor(tables: [Accounts])
+class AccountsDao extends DatabaseAccessor<AppDatabase>
+    with _$AccountsDaoMixin {
+  AccountsDao(super.db);
+
+  Stream<List<Account>> watchAll() {
+    return (select(db.accounts)
+          ..where((a) => a.isActive.equals(true))
+          ..orderBy([(a) => OrderingTerm.asc(a.createdAt)]))
+        .watch();
+  }
+
+  Future<List<Account>> getAll() {
+    return (select(db.accounts)
+          ..where((a) => a.isActive.equals(true)))
+        .get();
+  }
+
+  Future<Account?> getById(int id) async {
+    return (select(db.accounts)..where((a) => a.id.equals(id)))
+        .getSingleOrNull();
+  }
+
+  Future<int> addAccount(AccountsCompanion entry) {
+    return into(db.accounts).insert(entry);
+  }
+
+  Future<bool> updateAccount(Account account) {
+    return update(db.accounts).replace(account);
+  }
+
+  Future<void> updateBalance(int id, double newBalance) async {
+    await (update(db.accounts)..where((a) => a.id.equals(id)))
+        .write(AccountsCompanion(balance: Value(newBalance)));
+  }
+
+  Future<int> deleteAccount(int id) {
+    return (delete(db.accounts)..where((a) => a.id.equals(id))).go();
+  }
+
+  Future<double> getTotalBalance() async {
+    final all = await getAll();
+    return all.fold<double>(0.0, (s, a) => s + a.balance);
+  }
+
+  Future<int> deleteAll() => delete(db.accounts).go();
+}

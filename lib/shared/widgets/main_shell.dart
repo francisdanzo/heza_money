@@ -9,9 +9,10 @@ class MainShell extends StatelessWidget {
 
   int _currentIndex(BuildContext context) {
     final path = GoRouterState.of(context).uri.path;
-    if (path.startsWith('/budget')) return 1;
-    if (path.startsWith('/invest')) return 2;
-    if (path.startsWith('/profile')) return 3;
+    if (path.startsWith('/budget'))   return 1;
+    if (path.startsWith('/accounts')) return 2;
+    if (path.startsWith('/invest'))   return 3;
+    if (path.startsWith('/profile'))  return 4;
     return 0;
   }
 
@@ -19,8 +20,9 @@ class MainShell extends StatelessWidget {
     switch (index) {
       case 0: context.go('/');
       case 1: context.go('/budget');
-      case 2: context.go('/invest');
-      case 3: context.go('/profile');
+      case 2: context.go('/accounts');
+      case 3: context.go('/invest');
+      case 4: context.go('/profile');
     }
   }
 
@@ -28,7 +30,7 @@ class MainShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentIndex = _currentIndex(context);
     return Scaffold(
-      extendBody: true, // Permet au contenu de passer derrière la nav bar
+      extendBody: true,
       body: child,
       bottomNavigationBar: GlassBottomNavBar(
         currentIndex: currentIndex,
@@ -43,6 +45,11 @@ class MainShell extends StatelessWidget {
             icon: Icons.account_balance_wallet_outlined,
             activeIcon: Icons.account_balance_wallet_rounded,
             label: 'Budget',
+          ),
+          GlassNavItem(
+            icon: Icons.credit_card_outlined,
+            activeIcon: Icons.credit_card_rounded,
+            label: 'Comptes',
           ),
           GlassNavItem(
             icon: Icons.school_outlined,

@@ -11,6 +11,22 @@ class Transactions extends Table {
   DateTimeColumn get date => dateTime()();
   // Mois au format 'YYYY-MM' pour filtrage rapide
   TextColumn get monthKey => text().withLength(min: 7, max: 7)();
+  // Compte associé (nullable = non affecté à un compte)
+  IntColumn get accountId => integer().nullable()();
+}
+
+/// Table des comptes (banque, mobile money, cash)
+class Accounts extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text().withLength(min: 1, max: 100)();
+  // 'mobile_money' | 'bank' | 'cash'
+  TextColumn get type => text()();
+  // 'lumicash' | 'ecocash' | 'mobibank' | 'bcb' | 'bancobu' | 'ibb' | 'cash' | 'other'
+  TextColumn get provider => text().nullable()();
+  RealColumn get balance => real().withDefault(const Constant(0.0))();
+  TextColumn get color => text().withDefault(const Constant('#1D9E75'))();
+  DateTimeColumn get createdAt => dateTime()();
+  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
 }
 
 /// Table des objectifs d'épargne

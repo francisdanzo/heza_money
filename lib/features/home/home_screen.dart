@@ -151,6 +151,10 @@ class HomeScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
 
+                // Comptes rapides
+                _AccountsQuickCard(currency: currency),
+                const SizedBox(height: 16),
+
                 // Tendance des dépenses 6 mois
                 _SpendingTrend(currency: currency),
                 const SizedBox(height: 16),
@@ -793,5 +797,100 @@ class _SpendingTrend extends ConsumerWidget {
         ],
       ),
     );
+  }
+}
+
+// ── Quick accounts card shown on home ─────────────────────────────────────────
+class _AccountsQuickCard extends ConsumerWidget {
+  final String currency;
+  const _AccountsQuickCard({required this.currency});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final accountsAsync = ref.watch(accountsProvider);
+    final totalAsync    = ref.watch(totalAccountsBalanceProvider);
+    final t = HezaTheme.of(context);
+
+    return accountsAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (accounts) {
+        if (accounts.isEmpty) return const SizedBox.shrink();
+        return GestureDetector(
+          onTap: () => context.go('/accounts'),
+          child: GlassCard(
+            padding: const EdgeInsets.all(14),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                const Icon(Icons.credit_card_rounded, size: 18, color: HezaColors.primary),
+                const SizedBox(width: 8),
+                Text('Mes comptes',
+                    style: TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w700, color: t.text)),
+                const Spacer(),
+                Text('Voir tout', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: t.primary, fontWeight: FontWeight.w600)),
+                Icon(Icons.arrow_forward_ios_rounded, size: 12, color: t.primary),
+              ]),
+              const SizedBox(height: 12),
+              Row(children: [
+                ...accounts.take(3).map((a) => Padding(
+                  padding: const EdgeInsets.only(right: 10),
+                  child: _AccountMini(account: a),
+                )),
+                if (accounts.length > 3)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: HezaColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(HezaRadius.sm),
+                    ),
+                    child: Text('+${accounts.length - 3}',
+                        style: const TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w600, color: HezaColors.primary)),
+                  ),
+                const Spacer(),
+                totalAsync.when(
+                  loading: () => const SizedBox.shrink(),
+                  error: (_, __) => const SizedBox.shrink(),
+                  data: (total) => Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                    Text('Total', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: t.textMuted)),
+                    Text(AppFormatters.formatNumber(total),
+                        style: TextStyle(fontFamily: 'Inter', fontSize: 15, fontWeight: FontWeight.w800, color: t.text)),
+                    Text(currency, style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: t.textMuted)),
+                  ]),
+                ),
+              ]),
+            ]),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _AccountMini extends StatelessWidget {
+  final Account account;
+  const _AccountMini({required this.account});
+
+  @override
+  Widget build(BuildContext context) {
+    final t = HezaTheme.of(context);
+    final color = Color(int.parse(account.color.replaceFirst('#', 'FF'), radix: 16));
+    return Column(children: [
+      Container(
+        width: 38, height: 38,
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(HezaRadius.sm),
+        ),
+        child: Icon(
+          account.type == 'mobile_money' ? Icons.phone_android_rounded
+              : account.type == 'bank' ? Icons.account_balance_rounded
+              : Icons.wallet_rounded,
+          color: color, size: 18,
+        ),
+      ),
+      const SizedBox(height: 4),
+      Text(account.name.length > 8 ? '${account.name.substring(0, 7)}…' : account.name,
+          style: TextStyle(fontFamily: 'Inter', fontSize: 10, color: t.textSub)),
+    ]);
   }
 }

@@ -41,6 +41,11 @@ final categoryBudgetsDaoProvider = Provider<CategoryBudgetsDao>((ref) {
   return ref.watch(databaseProvider).categoryBudgetsDao;
 });
 
+/// Provider du DAO comptes
+final accountsDaoProvider = Provider<AccountsDao>((ref) {
+  return ref.watch(databaseProvider).accountsDao;
+});
+
 // --- Streams de données réactives ---
 
 /// Stream du profil utilisateur courant
@@ -73,6 +78,16 @@ final earnedBadgesProvider = StreamProvider<List<EarnedBadge>>((ref) {
 /// Stream des limites budgétaires par catégorie
 final categoryBudgetsProvider = StreamProvider<List<CategoryBudget>>((ref) {
   return ref.watch(categoryBudgetsDaoProvider).watchAll();
+});
+
+/// Stream de tous les comptes actifs
+final accountsProvider = StreamProvider<List<Account>>((ref) {
+  return ref.watch(accountsDaoProvider).watchAll();
+});
+
+/// Balance totale de tous les comptes
+final totalAccountsBalanceProvider = FutureProvider<double>((ref) {
+  return ref.watch(accountsDaoProvider).getTotalBalance();
 });
 
 // --- Providers calculés ---

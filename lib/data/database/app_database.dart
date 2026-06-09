@@ -18,6 +18,7 @@ part 'app_database.g.dart';
     LessonProgress,
     EarnedBadges,
     CategoryBudgets,
+    Accounts,
   ],
   daos: [
     TransactionsDao,
@@ -26,13 +27,14 @@ part 'app_database.g.dart';
     LessonProgressDao,
     EarnedBadgesDao,
     CategoryBudgetsDao,
+    AccountsDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration {
@@ -45,6 +47,10 @@ class AppDatabase extends _$AppDatabase {
           await m.addColumn(goals, goals.icon);
           await m.addColumn(userProfile, userProfile.notificationsEnabled);
           await m.createTable(categoryBudgets);
+        }
+        if (from < 3) {
+          await m.addColumn(transactions, transactions.accountId);
+          await m.createTable(accounts);
         }
       },
     );
