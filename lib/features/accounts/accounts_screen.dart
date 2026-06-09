@@ -310,7 +310,7 @@ class _FeeCalculator extends StatefulWidget {
 
 class _FeeCalculatorState extends State<_FeeCalculator> {
   String _selectedProvider = 'lumicash';
-  String _operationType = 'transfer'; // 'transfer' | 'withdrawal'
+  String _operationType = 'transfer'; // 'transfer' | 'external_transfer' | 'withdrawal'
   final _amountController = TextEditingController();
   double? _calculatedFee;
 
@@ -330,16 +330,36 @@ class _FeeCalculatorState extends State<_FeeCalculator> {
     final provider = MobileMoneyData.getById(_selectedProvider);
     if (provider == null) return;
     setState(() {
-      _calculatedFee = _operationType == 'transfer'
-          ? provider.transferFee(amount)
-          : provider.withdrawalFee(amount);
+      switch (_operationType) {
+        case 'external_transfer':
+          _calculatedFee = provider.externalTransferFee(amount);
+        case 'withdrawal':
+          _calculatedFee = provider.withdrawalFee(amount);
+        default:
+          _calculatedFee = provider.transferFee(amount);
+      }
     });
+  }
+
+  void _selectProvider(String id) {
+    final provider = MobileMoneyData.getById(id);
+    // Si l'opération courante n'est pas disponible pour ce provider, reset
+    final hasExternal = provider?.hasExternalTransferFees ?? false;
+    setState(() {
+      _selectedProvider = id;
+      _calculatedFee = null;
+      if (_operationType == 'external_transfer' && !hasExternal) {
+        _operationType = 'transfer';
+      }
+    });
+    _calculate();
   }
 
   @override
   Widget build(BuildContext context) {
     final t = HezaTheme.of(context);
     final providers = MobileMoneyData.providers;
+    final currentProvider = MobileMoneyData.getById(_selectedProvider);
 
     return GlassCard(
       padding: const EdgeInsets.all(16),
@@ -351,7 +371,7 @@ class _FeeCalculatorState extends State<_FeeCalculator> {
           return Padding(
             padding: const EdgeInsets.only(right: 8),
             child: GestureDetector(
-              onTap: () { setState(() { _selectedProvider = p.id; _calculatedFee = null; }); _calculate(); },
+              onTap: () => _selectProvider(p.id),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 180),
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
@@ -370,9 +390,10 @@ class _FeeCalculatorState extends State<_FeeCalculator> {
         const SizedBox(height: 14),
 
         // Operation type
-        Row(children: [
-          _opChip('transfer', Icons.send_rounded, 'Transfert', t),
-          const SizedBox(width: 8),
+        Wrap(spacing: 8, runSpacing: 8, children: [
+          _opChip('transfer', Icons.send_rounded, 'Transfert Lumi', t),
+          if (currentProvider?.hasExternalTransferFees == true)
+            _opChip('external_transfer', Icons.swap_horiz_rounded, 'Vers autre réseau', t),
           _opChip('withdrawal', Icons.money_off_rounded, 'Retrait', t),
         ]),
         const SizedBox(height: 14),
@@ -436,8 +457,12 @@ class _FeeCalculatorState extends State<_FeeCalculator> {
             ]),
           ),
           const SizedBox(height: 6),
-          Text('* Tarifs indicatifs — vérifier avec votre opérateur',
-              style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: t.textMuted, fontStyle: FontStyle.italic)),
+          Text(
+            _selectedProvider == 'lumicash'
+                ? '* Source : tableau officiel Lumitel / Lumipay'
+                : '* Tarifs indicatifs — vérifier avec votre opérateur',
+            style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: t.textMuted, fontStyle: FontStyle.italic),
+          ),
         ],
       ]),
     );
