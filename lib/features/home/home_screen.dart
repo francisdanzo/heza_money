@@ -64,7 +64,10 @@ class HomeScreen extends ConsumerWidget {
     List<Transaction> transactions,
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final balance   = salary - expenses;
+    final extraIncome = transactions
+        .where((t) => t.type == 'income')
+        .fold<double>(0.0, (s, t) => s + t.amount);
+    final balance   = salary + extraIncome - expenses;
     final firstName = name.split(' ').first;
 
     // Calcul 50/30/20
