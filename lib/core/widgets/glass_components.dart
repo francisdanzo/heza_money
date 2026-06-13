@@ -360,23 +360,10 @@ class GlassGradientHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    if (!isDark) {
-      // Light mode — gradient vert Heza (inchangé)
-      return Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [HezaColors.primary, Color(0xFF1D9E75)],
-          ),
-        ),
-        child: child,
-      );
-    }
-
-    // Dark mode — aurora animée avec blobs qui respirent
+    // Aurora animée dans les deux modes — blobs adaptés à chaque fond
     return ClipRect(
       child: AuroraBackground(
+        isDark: isDark,
         child: Stack(
           children: [
             // ── Accent ligne horizontale en bas ──────────────────────────────
@@ -388,7 +375,7 @@ class GlassGradientHeader extends StatelessWidget {
                   gradient: LinearGradient(
                     colors: [
                       Colors.transparent,
-                      HezaColors.primaryLight.withValues(alpha: 0.30),
+                      Colors.white.withValues(alpha: isDark ? 0.30 : 0.35),
                       Colors.transparent,
                     ],
                   ),
@@ -777,7 +764,8 @@ class GlassStatCard extends StatelessWidget {
 /// À utiliser derrière les headers et cartes hero en dark mode.
 class AuroraBackground extends StatefulWidget {
   final Widget child;
-  const AuroraBackground({super.key, required this.child});
+  final bool isDark;
+  const AuroraBackground({super.key, required this.child, this.isDark = true});
 
   @override
   State<AuroraBackground> createState() => _AuroraBackgroundState();
@@ -809,14 +797,16 @@ class _AuroraBackgroundState extends State<AuroraBackground>
     return Stack(
       fit: StackFit.passthrough,
       children: [
-        // Fond de base deep navy
+        // Fond de base
         Positioned.fill(
           child: Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [Color(0xFF020617), Color(0xFF0B1628)],
+                colors: widget.isDark
+                    ? const [Color(0xFF020617), Color(0xFF0B1628)]
+                    : const [HezaColors.primary, Color(0xFF1D9E75)],
               ),
             ),
           ),
@@ -828,40 +818,44 @@ class _AuroraBackgroundState extends State<AuroraBackground>
               animation: _anim,
               builder: (_, __) {
                 final t = _anim.value;
-                return Stack(
-                  children: [
-                    // Blob vert — top-right, pulse (identité financière)
+                if (widget.isDark) {
+                  return Stack(children: [
+                    // Blob vert — top-right
                     Positioned(
-                      top: -80 + t * 25,
-                      right: -40 + t * 20,
-                      child: _AuroraBlob(
-                        size: 300 + t * 60,
-                        color: HezaColors.primaryLight,
-                        opacity: 0.11 + t * 0.09,
-                      ),
+                      top: -80 + t * 25, right: -40 + t * 20,
+                      child: _AuroraBlob(size: 300 + t * 60, color: HezaColors.primaryLight, opacity: 0.11 + t * 0.09),
                     ),
-                    // Blob bleu — bottom-left, profondeur
+                    // Blob bleu — bottom-left
                     Positioned(
-                      bottom: -40 - t * 15,
-                      left: -30 + t * 15,
-                      child: _AuroraBlob(
-                        size: 220 - t * 30,
-                        color: const Color(0xFF3B82F6),
-                        opacity: 0.07 + t * 0.06,
-                      ),
+                      bottom: -40 - t * 15, left: -30 + t * 15,
+                      child: _AuroraBlob(size: 220 - t * 30, color: const Color(0xFF3B82F6), opacity: 0.07 + t * 0.06),
                     ),
-                    // Blob émeraude — centre, accent
+                    // Blob émeraude — centre
                     Positioned(
-                      top: 40 + t * 40,
-                      right: 70 - t * 30,
-                      child: _AuroraBlob(
-                        size: 150 + t * 40,
-                        color: const Color(0xFF10B981),
-                        opacity: 0.05 + t * 0.05,
-                      ),
+                      top: 40 + t * 40, right: 70 - t * 30,
+                      child: _AuroraBlob(size: 150 + t * 40, color: const Color(0xFF10B981), opacity: 0.05 + t * 0.05),
                     ),
-                  ],
-                );
+                  ]);
+                } else {
+                  // Light mode — blobs blancs et vert profond sur fond vert
+                  return Stack(children: [
+                    // Blob blanc — top-right, lumière naturelle
+                    Positioned(
+                      top: -70 + t * 20, right: -50 + t * 15,
+                      child: _AuroraBlob(size: 280 + t * 50, color: Colors.white, opacity: 0.18 + t * 0.10),
+                    ),
+                    // Blob vert profond — bottom-left, profondeur
+                    Positioned(
+                      bottom: -50 - t * 10, left: -20 + t * 10,
+                      child: _AuroraBlob(size: 200 - t * 20, color: const Color(0xFF064E3B), opacity: 0.20 + t * 0.12),
+                    ),
+                    // Blob doré — centre, chaleur
+                    Positioned(
+                      top: 50 + t * 30, right: 60 - t * 20,
+                      child: _AuroraBlob(size: 140 + t * 30, color: const Color(0xFFFDE68A), opacity: 0.08 + t * 0.06),
+                    ),
+                  ]);
+                }
               },
             ),
           ),
@@ -879,8 +873,10 @@ class _AuroraBackgroundState extends State<AuroraBackground>
       [58.0, 38.0], [204.0, 18.0], [318.0, 62.0],
       [82.0, 108.0], [248.0, 78.0], [152.0, 28.0],
     ];
-    const sizes   = [2.0, 1.5, 2.0, 1.5, 2.5, 1.5];
-    const opacities = [0.35, 0.22, 0.38, 0.18, 0.28, 0.22];
+    const sizes     = [2.0, 1.5, 2.0, 1.5, 2.5, 1.5];
+    final opacities = widget.isDark
+        ? const [0.35, 0.22, 0.38, 0.18, 0.28, 0.22]
+        : const [0.45, 0.30, 0.50, 0.25, 0.38, 0.30];
     return List.generate(6, (i) => Positioned(
       left: positions[i][0],
       top:  positions[i][1],
