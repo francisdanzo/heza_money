@@ -108,7 +108,7 @@ class HomeScreen extends ConsumerWidget {
               },
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(16, 20, 16, 100),
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 130),
               children: [
                 // Boutons d'action rapide
                 _QuickActions(context: context),
@@ -325,10 +325,14 @@ class _HeroHeader extends StatelessWidget {
                 AppFormatters.formatAmount(balance, currency: currency),
                 style: const TextStyle(
                   fontFamily: 'Inter',
-                  fontSize: 36,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 38,
+                  fontWeight: FontWeight.w800,
                   color: Colors.white,
-                  letterSpacing: -0.8,
+                  letterSpacing: -1.0,
+                  shadows: [
+                    Shadow(color: Color(0x5022C55E), blurRadius: 24),
+                    Shadow(color: Color(0x20FFFFFF), blurRadius: 8, offset: Offset(0, 1)),
+                  ],
                 ),
               ),
               const SizedBox(height: 6),
@@ -637,42 +641,49 @@ class _TransactionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = HezaTheme.of(context);
     final isIncome = transaction.type == 'income';
+    final amountColor = isIncome ? HezaColors.success : HezaColors.error;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        children: [
-          CategoryIcon(category: transaction.category, size: 44),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _categoryLabel(transaction.category),
-                  style: TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w500, color: t.text),
-                ),
-                Text(
-                  transaction.note?.isNotEmpty == true
-                      ? transaction.note!
-                      : AppFormatters.formatRelativeDate(transaction.date),
-                  style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: t.textSub),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+      padding: const EdgeInsets.only(bottom: 6),
+      child: GlassCard(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Row(
+          children: [
+            CategoryIcon(category: transaction.category, size: 40),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _categoryLabel(transaction.category),
+                    style: TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w500, color: t.text),
+                  ),
+                  Text(
+                    transaction.note?.isNotEmpty == true
+                        ? transaction.note!
+                        : AppFormatters.formatRelativeDate(transaction.date),
+                    style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: t.textSub),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
-          ),
-          Text(
-            '${isIncome ? '+' : '-'} ${AppFormatters.formatNumber(transaction.amount)} $currency',
-            style: TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: isIncome ? HezaColors.success : t.text,
+            Text(
+              '${isIncome ? '+' : '−'} ${AppFormatters.formatNumber(transaction.amount)} $currency',
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: amountColor,
+                shadows: t.isDark
+                    ? [Shadow(color: amountColor.withValues(alpha: 0.4), blurRadius: 8)]
+                    : null,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -761,14 +772,18 @@ class _SpendingTrend extends ConsumerWidget {
                       LineChartBarData(
                         spots: spots,
                         isCurved: true,
-                        color: HezaColors.primary,
+                        color: HezaColors.primaryLight,
                         barWidth: 2.5,
+                        shadow: const Shadow(
+                          color: Color(0x7022C55E),
+                          blurRadius: 12,
+                        ),
                         dotData: FlDotData(
                           show: true,
                           getDotPainter: (spot, _, __, ___) => FlDotCirclePainter(
-                            radius: 3.5,
-                            color: HezaColors.primary,
-                            strokeWidth: 1.5,
+                            radius: 4.0,
+                            color: HezaColors.primaryLight,
+                            strokeWidth: 2.0,
                             strokeColor: Colors.white,
                           ),
                         ),
@@ -777,7 +792,12 @@ class _SpendingTrend extends ConsumerWidget {
                           gradient: LinearGradient(
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
-                            colors: [HezaColors.primary.withValues(alpha: 0.25), HezaColors.primary.withValues(alpha: 0.0)],
+                            colors: [
+                              HezaColors.primaryLight.withValues(alpha: 0.28),
+                              HezaColors.primaryLight.withValues(alpha: 0.06),
+                              Colors.transparent,
+                            ],
+                            stops: const [0.0, 0.6, 1.0],
                           ),
                         ),
                       ),

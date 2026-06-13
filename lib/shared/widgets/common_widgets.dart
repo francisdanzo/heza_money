@@ -85,6 +85,7 @@ class HezaBadge extends StatelessWidget {
 }
 
 // ─── HEZA PROGRESS BAR ───────────────────────────────────────────────────────
+/// Progress bar personnalisée avec gradient et glow en dark mode.
 class HezaProgressBar extends StatelessWidget {
   final double value;
   final Color color;
@@ -102,14 +103,51 @@ class HezaProgressBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = HezaTheme.of(context);
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(HezaRadius.full),
-      child: LinearProgressIndicator(
-        value: value.clamp(0.0, 1.0),
-        minHeight: height,
-        backgroundColor: backgroundColor ?? color.withValues(alpha: t.isDark ? 0.2 : 0.1),
-        valueColor: AlwaysStoppedAnimation<Color>(color),
-      ),
+    final clamped = value.clamp(0.0, 1.0);
+    final bg = backgroundColor ?? color.withValues(alpha: t.isDark ? 0.15 : 0.08);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final fillWidth = constraints.maxWidth * clamped;
+        return SizedBox(
+          height: height,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(HezaRadius.full),
+            child: Stack(
+              children: [
+                // Piste de fond
+                Positioned.fill(child: Container(color: bg)),
+                // Remplissage avec gradient + glow
+                if (clamped > 0)
+                  Positioned(
+                    left: 0, top: 0, bottom: 0,
+                    width: fillWidth,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            color.withValues(alpha: 0.75),
+                            color,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(HezaRadius.full),
+                        boxShadow: t.isDark
+                            ? [
+                                BoxShadow(
+                                  color: color.withValues(alpha: 0.50),
+                                  blurRadius: 8,
+                                  spreadRadius: 0,
+                                ),
+                              ]
+                            : null,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -217,14 +255,35 @@ class QuickActionButton extends StatelessWidget {
                 width: 58,
                 height: 58,
                 decoration: BoxDecoration(
-                  color: backgroundColor.withValues(alpha: t.isDark ? 0.15 : 0.85),
+                  gradient: t.isDark
+                      ? LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            backgroundColor.withValues(alpha: 0.22),
+                            backgroundColor.withValues(alpha: 0.12),
+                          ],
+                        )
+                      : null,
+                  color: t.isDark ? null : backgroundColor.withValues(alpha: 0.88),
                   border: Border.all(
-                    color: backgroundColor.withValues(alpha: 0.3),
-                    width: 1,
+                    color: backgroundColor.withValues(alpha: t.isDark ? 0.28 : 0.35),
+                    width: 0.8,
                   ),
                   borderRadius: BorderRadius.circular(HezaRadius.lg),
+                  boxShadow: [
+                    BoxShadow(
+                      color: backgroundColor.withValues(alpha: t.isDark ? 0.18 : 0.28),
+                      blurRadius: t.isDark ? 14 : 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-                child: Icon(icon, color: iconColor, size: 24),
+                child: Icon(
+                  icon,
+                  color: t.isDark ? backgroundColor : iconColor,
+                  size: 24,
+                ),
               ),
             ),
           ),

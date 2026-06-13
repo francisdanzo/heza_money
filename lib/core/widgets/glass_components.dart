@@ -1,11 +1,11 @@
+import 'dart:math' show max;
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/design_tokens.dart';
 
 // ─── GLASS CARD ──────────────────────────────────────────────────────────────
-/// Card glassmorphique avec backdrop blur.
-/// Utiliser pour toutes les cartes de contenu (stats, listes, forms, etc.)
+/// Card glassmorphique premium avec top-edge highlight en dark mode.
 class GlassCard extends StatelessWidget {
   final Widget child;
   final double blur;
@@ -36,6 +36,16 @@ class GlassCard extends StatelessWidget {
     final effectiveOpacity = opacity ?? t.glassOpacity;
     final effectiveBg = (tintColor ?? t.glassBg).withValues(alpha: effectiveOpacity);
 
+    // Top-edge highlight border pour dark mode (effet lumière sur bord supérieur)
+    final effectiveBorder = border ?? (t.isDark
+        ? Border(
+            top:    BorderSide(color: t.glassTopEdge,  width: 0.8),
+            left:   BorderSide(color: t.glassBorder,   width: 0.5),
+            right:  BorderSide(color: t.glassBorder,   width: 0.5),
+            bottom: BorderSide(color: t.glassBorder,   width: 0.5),
+          )
+        : Border.all(color: t.glassBorder, width: 1));
+
     final inner = ClipRRect(
       borderRadius: BorderRadius.circular(radius),
       child: BackdropFilter(
@@ -43,7 +53,7 @@ class GlassCard extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             color: effectiveBg,
-            border: border ?? Border.all(color: t.glassBorder, width: 1),
+            border: effectiveBorder,
             borderRadius: BorderRadius.circular(radius),
             boxShadow: shadows ?? t.shadowMd,
           ),
@@ -54,14 +64,11 @@ class GlassCard extends StatelessWidget {
     );
 
     if (onTap == null) return inner;
-
     return _PressableWrapper(onTap: onTap!, child: inner);
   }
 }
 
 // ─── GLASS APP BAR ───────────────────────────────────────────────────────────
-/// AppBar glassmorphique avec gradient vert Heza.
-/// Remplace AppBar dans tous les écrans avec header vert.
 class GlassAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final String? subtitle;
@@ -84,8 +91,7 @@ class GlassAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = showGradient
-        ? null
+    final bg = showGradient ? null
         : (isDark ? HezaColors.darkBg : HezaColors.lightBg);
 
     return ClipRect(
@@ -98,17 +104,17 @@ class GlassAppBar extends StatelessWidget implements PreferredSizeWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: isDark
-                        ? [HezaColors.darkBg2, HezaColors.darkSurface]
-                        : [HezaColors.primary, HezaColors.primaryLight],
+                        ? [HezaColors.darkBg, HezaColors.darkBg2]
+                        : [HezaColors.primary, HezaColors.primaryLight.withValues(alpha: 0.8)],
                   )
                 : null,
             color: bg,
             border: Border(
               bottom: BorderSide(
                 color: isDark
-                    ? HezaColors.darkBorder
+                    ? HezaColors.glassHairline
                     : HezaColors.primary.withValues(alpha: 0.2),
-                width: 1,
+                width: 0.5,
               ),
             ),
           ),
@@ -125,8 +131,7 @@ class GlassAppBar extends StatelessWidget implements PreferredSizeWidget {
                     fontFamily: 'Inter',
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: showGradient
-                        ? Colors.white
+                    color: showGradient ? Colors.white
                         : (isDark ? HezaColors.darkText : HezaColors.lightText),
                   ),
                 ),
@@ -138,7 +143,7 @@ class GlassAppBar extends StatelessWidget implements PreferredSizeWidget {
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
                       color: showGradient
-                          ? Colors.white.withValues(alpha: 0.75)
+                          ? Colors.white.withValues(alpha: 0.7)
                           : (isDark ? HezaColors.darkTextSub : HezaColors.lightTextSub),
                     ),
                   ),
@@ -154,8 +159,9 @@ class GlassAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 }
 
-// ─── GLASS BOTTOM NAV ────────────────────────────────────────────────────────
-/// BottomNavigationBar glassmorphique avec backdrop blur.
+// ─── GLASS BOTTOM NAV — Floating Island Style ────────────────────────────────
+/// Navbar flottante en forme d'île pilule — ne touche pas les bords de l'écran.
+/// Effet glassmorphique, limelight vert sur item actif, glow vert en dark mode.
 class GlassBottomNavBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -170,35 +176,60 @@ class GlassBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = HezaTheme.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final safeBottom = MediaQuery.of(context).padding.bottom;
+    final islandHeight = 64.0;
+    final topGap = 10.0;
+    final bottomGap = max(safeBottom > 0 ? safeBottom - 4 : 10.0, 10.0);
 
-    return ClipRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: HezaBlur.strong, sigmaY: HezaBlur.strong),
-        child: Container(
-          decoration: BoxDecoration(
-            color: t.glassBg.withValues(alpha: t.isDark ? 0.85 : 0.92),
-            border: Border(
-              top: BorderSide(color: t.glassBorder, width: 1),
-            ),
-          ),
-          child: SafeArea(
-            top: false,
-            child: SizedBox(
-              height: 56,
+    return Container(
+      color: Colors.transparent,
+      height: topGap + islandHeight + bottomGap,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(18, topGap, 18, bottomGap),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(36),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: HezaBlur.overlay, sigmaY: HezaBlur.overlay),
+            child: Container(
+              height: islandHeight,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? HezaColors.darkBg2.withValues(alpha: 0.93)
+                    : HezaColors.lightSurface.withValues(alpha: 0.97),
+                borderRadius: BorderRadius.circular(36),
+                border: Border.all(
+                  color: isDark
+                      ? const Color(0x1AFFFFFF)
+                      : HezaColors.lightBorder,
+                  width: 0.8,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.28),
+                    blurRadius: 32,
+                    offset: const Offset(0, 8),
+                  ),
+                  if (isDark)
+                    BoxShadow(
+                      color: HezaColors.primaryLight.withValues(alpha: 0.09),
+                      blurRadius: 50,
+                      spreadRadius: 6,
+                    ),
+                ],
+              ),
               child: Row(
                 children: List.generate(items.length, (i) {
-                  final active = i == currentIndex;
-                  final item = items[i];
                   return Expanded(
-                    child: _GlassNavTile(
-                      icon: item.icon,
-                      activeIcon: item.activeIcon ?? item.icon,
-                      label: item.label,
-                      active: active,
-                      onTap: () => onTap(i),
-                      activeColor: t.primary,
-                      inactiveColor: t.textSub,
+                    child: _LimelightNavTile(
+                      icon: items[i].icon,
+                      activeIcon: items[i].activeIcon ?? items[i].icon,
+                      label: items[i].label,
+                      active: i == currentIndex,
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        onTap(i);
+                      },
                     ),
                   );
                 }),
@@ -218,65 +249,154 @@ class GlassNavItem {
   const GlassNavItem({required this.icon, this.activeIcon, required this.label});
 }
 
-class _GlassNavTile extends StatelessWidget {
+class _LimelightNavTile extends StatelessWidget {
   final IconData icon;
   final IconData activeIcon;
   final String label;
   final bool active;
   final VoidCallback onTap;
-  final Color activeColor;
-  final Color inactiveColor;
 
-  const _GlassNavTile({
+  const _LimelightNavTile({
     required this.icon,
     required this.activeIcon,
     required this.label,
     required this.active,
     required this.onTap,
-    required this.activeColor,
-    required this.inactiveColor,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activeColor  = isDark ? HezaColors.primaryLight : HezaColors.primary;
+    final inactiveColor = isDark ? HezaColors.darkTextMuted : HezaColors.lightTextMuted;
+
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOut,
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: EdgeInsets.symmetric(
-                horizontal: active ? 16 : 0,
-                vertical: 2,
-              ),
-              decoration: active
-                  ? BoxDecoration(
-                      color: activeColor.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(HezaRadius.full),
-                    )
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // ── Limelight indicator (ligne verte avec glow en haut) ───────────
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOutCubic,
+            height: 3,
+            width: active ? 28 : 0,
+            margin: const EdgeInsets.only(bottom: 6),
+            decoration: BoxDecoration(
+              color: active ? activeColor : Colors.transparent,
+              borderRadius: BorderRadius.circular(1.5),
+              boxShadow: active
+                  ? [
+                      BoxShadow(
+                        color: activeColor.withValues(alpha: 0.65),
+                        blurRadius: 8,
+                        spreadRadius: 2,
+                      ),
+                    ]
                   : null,
+            ),
+          ),
+
+          // ── Icône avec halo actif ─────────────────────────────────────────
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOutCubic,
+            width: active ? 44 : 28,
+            height: 28,
+            decoration: active ? BoxDecoration(
+              gradient: RadialGradient(
+                colors: [
+                  activeColor.withValues(alpha: 0.18),
+                  Colors.transparent,
+                ],
+              ),
+              borderRadius: BorderRadius.circular(14),
+            ) : null,
+            child: Center(
               child: Icon(
                 active ? activeIcon : icon,
                 size: 22,
                 color: active ? activeColor : inactiveColor,
               ),
             ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 11,
-                fontWeight: active ? FontWeight.w600 : FontWeight.w400,
-                color: active ? activeColor : inactiveColor,
+          ),
+
+          const SizedBox(height: 2),
+
+          // ── Label ─────────────────────────────────────────────────────────
+          AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 200),
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 10,
+              fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+              color: active ? activeColor : inactiveColor,
+            ),
+            child: Text(label, overflow: TextOverflow.ellipsis),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── GLASS GRADIENT HEADER ───────────────────────────────────────────────────
+/// Header avec gradient premium.
+/// Light mode : gradient vert Heza.
+/// Dark mode  : deep navy-black avec ambient blobs verts/bleus (cinematic dark).
+class GlassGradientHeader extends StatelessWidget {
+  final Widget child;
+  final double blurAmount;
+
+  const GlassGradientHeader({
+    super.key,
+    required this.child,
+    this.blurAmount = HezaBlur.subtle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    if (!isDark) {
+      // Light mode — gradient vert Heza (inchangé)
+      return Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [HezaColors.primary, Color(0xFF1D9E75)],
+          ),
+        ),
+        child: child,
+      );
+    }
+
+    // Dark mode — aurora animée avec blobs qui respirent
+    return ClipRect(
+      child: AuroraBackground(
+        child: Stack(
+          children: [
+            // ── Accent ligne horizontale en bas ──────────────────────────────
+            Positioned(
+              bottom: 0, left: 0, right: 0,
+              child: Container(
+                height: 0.5,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.transparent,
+                      HezaColors.primaryLight.withValues(alpha: 0.30),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
               ),
             ),
+            // ── Contenu ───────────────────────────────────────────────────────
+            child,
           ],
         ),
       ),
@@ -285,7 +405,7 @@ class _GlassNavTile extends StatelessWidget {
 }
 
 // ─── GLASS BUTTON ────────────────────────────────────────────────────────────
-/// Bouton principal glassmorphique avec press feedback (scale + opacity).
+/// Bouton principal avec gradient en dark mode et glow vert.
 class GlassButton extends StatefulWidget {
   final String label;
   final VoidCallback? onPressed;
@@ -326,7 +446,7 @@ class _GlassButtonState extends State<GlassButton>
       vsync: this,
       duration: const Duration(milliseconds: 100),
     );
-    _scale = Tween<double>(begin: 1.0, end: 0.97).animate(
+    _scale = Tween<double>(begin: 1.0, end: 0.96).animate(
       CurvedAnimation(parent: _ctrl, curve: Curves.easeOut),
     );
   }
@@ -350,8 +470,7 @@ class _GlassButtonState extends State<GlassButton>
       children: [
         if (widget.isLoading)
           SizedBox(
-            width: 18,
-            height: 18,
+            width: 18, height: 18,
             child: CircularProgressIndicator(
               strokeWidth: 2,
               valueColor: AlwaysStoppedAnimation(fg),
@@ -386,18 +505,26 @@ class _GlassButtonState extends State<GlassButton>
           widget.onPressed!();
         },
         child: AnimatedOpacity(
-          opacity: disabled ? 0.5 : 1.0,
+          opacity: disabled ? 0.45 : 1.0,
           duration: const Duration(milliseconds: 150),
           child: Container(
             padding: widget.padding,
             decoration: BoxDecoration(
-              color: bg,
+              // Dark mode : gradient vert / Light mode : couleur unie
+              gradient: t.isDark && widget.color == null
+                  ? const LinearGradient(
+                      colors: [Color(0xFF16A34A), Color(0xFF22C55E)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
+                  : null,
+              color: t.isDark && widget.color == null ? null : bg,
               borderRadius: BorderRadius.circular(widget.radius),
               boxShadow: [
                 BoxShadow(
-                  color: bg.withValues(alpha: 0.35),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+                  color: bg.withValues(alpha: t.isDark ? 0.45 : 0.30),
+                  blurRadius: t.isDark ? 20 : 12,
+                  offset: const Offset(0, 5),
                 ),
               ],
             ),
@@ -410,7 +537,6 @@ class _GlassButtonState extends State<GlassButton>
 }
 
 // ─── GLASS INPUT ─────────────────────────────────────────────────────────────
-/// Champ de saisie glassmorphique avec blur et bordure verte.
 class GlassInput extends StatelessWidget {
   final String? label;
   final String? hintText;
@@ -469,25 +595,17 @@ class GlassInput extends StatelessWidget {
               obscureText: obscureText,
               focusNode: focusNode,
               maxLines: maxLines,
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 15,
-                color: t.text,
-              ),
+              style: TextStyle(fontFamily: 'Inter', fontSize: 15, color: t.text),
               decoration: InputDecoration(
                 hintText: hintText,
-                hintStyle: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 15,
-                  color: t.textMuted,
-                ),
+                hintStyle: TextStyle(fontFamily: 'Inter', fontSize: 15, color: t.textMuted),
                 prefixIcon: prefixIcon,
                 suffixIcon: suffixIcon,
                 filled: true,
-                fillColor: t.glassBg.withValues(alpha: t.isDark ? 0.5 : 0.85),
+                fillColor: t.glassBg.withValues(alpha: t.isDark ? 0.6 : 0.85),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(HezaRadius.md),
-                  borderSide: BorderSide(color: t.glassBorder, width: 1),
+                  borderSide: BorderSide(color: t.glassBorder, width: 0.8),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(HezaRadius.md),
@@ -513,38 +631,8 @@ class GlassInput extends StatelessWidget {
   }
 }
 
-// ─── GLASS GRADIENT HEADER ───────────────────────────────────────────────────
-/// Fond gradient vert pour le header de l'écran Home.
-class GlassGradientHeader extends StatelessWidget {
-  final Widget child;
-  final double blurAmount;
-
-  const GlassGradientHeader({
-    super.key,
-    required this.child,
-    this.blurAmount = HezaBlur.subtle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDark
-              ? [HezaColors.darkBg2, const Color(0xFF1A3526)]
-              : [HezaColors.primary, HezaColors.primaryLight],
-        ),
-      ),
-      child: child,
-    );
-  }
-}
-
 // ─── GLASS STAT CARD ─────────────────────────────────────────────────────────
-/// Carte de statistique avec icône et valeur — utilisée pour les stats sur Home.
+/// Carte statistique avec accent indicator.
 class GlassStatCard extends StatelessWidget {
   final String label;
   final String value;
@@ -566,65 +654,276 @@ class GlassStatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = HezaTheme.of(context);
-    return GlassCard(
-      padding: const EdgeInsets.all(14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: iconColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(HezaRadius.sm),
-                ),
-                child: Icon(icon, color: iconColor, size: 16),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: t.textSub,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(HezaRadius.lg),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: HezaBlur.normal, sigmaY: HezaBlur.normal),
+        child: Container(
+          decoration: BoxDecoration(
+            color: t.glassBg.withValues(alpha: t.glassOpacity),
+            borderRadius: BorderRadius.circular(HezaRadius.lg),
+            border: t.isDark
+                ? Border(
+                    top:    BorderSide(color: t.glassTopEdge, width: 0.8),
+                    left:   BorderSide(color: t.glassBorder,  width: 0.5),
+                    right:  BorderSide(color: t.glassBorder,  width: 0.5),
+                    bottom: BorderSide(color: t.glassBorder,  width: 0.5),
+                  )
+                : Border.all(color: t.glassBorder, width: 1),
+            boxShadow: t.shadowMd,
+          ),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Barre accent colorée à gauche avec glow
+                Container(
+                  width: 3,
+                  decoration: BoxDecoration(
+                    color: iconColor,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(HezaRadius.lg),
+                      bottomLeft: Radius.circular(HezaRadius.lg),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: iconColor.withValues(alpha: 0.45),
+                        blurRadius: 8,
+                      ),
+                    ],
                   ),
-                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(
-            value,
-            style: TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: valueColor ?? t.text,
-              letterSpacing: -0.3,
+                // Contenu
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(13),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 32, height: 32,
+                              decoration: BoxDecoration(
+                                gradient: RadialGradient(
+                                  colors: [
+                                    iconColor.withValues(alpha: t.isDark ? 0.22 : 0.12),
+                                    iconColor.withValues(alpha: 0.03),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(HezaRadius.sm),
+                              ),
+                              child: Icon(icon, color: iconColor, size: 16),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                label,
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  color: t.textSub,
+                                  letterSpacing: 0.1,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          value,
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 19,
+                            fontWeight: FontWeight.w800,
+                            color: valueColor ?? t.text,
+                            letterSpacing: -0.5,
+                            shadows: t.isDark
+                                ? [Shadow(
+                                    color: (valueColor ?? iconColor).withValues(alpha: 0.35),
+                                    blurRadius: 12,
+                                  )]
+                                : null,
+                          ),
+                        ),
+                        if (unit != null)
+                          Text(
+                            unit!,
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                              color: t.textMuted,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          if (unit != null)
-            Text(
-              unit!,
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 11,
-                color: t.textMuted,
+        ),
+      ),
+    );
+  }
+}
+
+// ─── AURORA BACKGROUND ───────────────────────────────────────────────────────
+/// Fond animé avec blobs radials qui respirent — effets aurora/ambiant.
+/// À utiliser derrière les headers et cartes hero en dark mode.
+class AuroraBackground extends StatefulWidget {
+  final Widget child;
+  const AuroraBackground({super.key, required this.child});
+
+  @override
+  State<AuroraBackground> createState() => _AuroraBackgroundState();
+}
+
+class _AuroraBackgroundState extends State<AuroraBackground>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _anim;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 7),
+    )..repeat(reverse: true);
+    _anim = CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.passthrough,
+      children: [
+        // Fond de base deep navy
+        Positioned.fill(
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF020617), Color(0xFF0B1628)],
               ),
             ),
-        ],
+          ),
+        ),
+        // Blobs animés isolés dans un RepaintBoundary
+        Positioned.fill(
+          child: RepaintBoundary(
+            child: AnimatedBuilder(
+              animation: _anim,
+              builder: (_, __) {
+                final t = _anim.value;
+                return Stack(
+                  children: [
+                    // Blob vert — top-right, pulse (identité financière)
+                    Positioned(
+                      top: -80 + t * 25,
+                      right: -40 + t * 20,
+                      child: _AuroraBlob(
+                        size: 300 + t * 60,
+                        color: HezaColors.primaryLight,
+                        opacity: 0.11 + t * 0.09,
+                      ),
+                    ),
+                    // Blob bleu — bottom-left, profondeur
+                    Positioned(
+                      bottom: -40 - t * 15,
+                      left: -30 + t * 15,
+                      child: _AuroraBlob(
+                        size: 220 - t * 30,
+                        color: const Color(0xFF3B82F6),
+                        opacity: 0.07 + t * 0.06,
+                      ),
+                    ),
+                    // Blob émeraude — centre, accent
+                    Positioned(
+                      top: 40 + t * 40,
+                      right: 70 - t * 30,
+                      child: _AuroraBlob(
+                        size: 150 + t * 40,
+                        color: const Color(0xFF10B981),
+                        opacity: 0.05 + t * 0.05,
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ),
+        // Étoiles/sparkles statiques — décoration subtile
+        ..._buildSparkles(),
+        // Contenu au-dessus
+        widget.child,
+      ],
+    );
+  }
+
+  List<Widget> _buildSparkles() {
+    const positions = [
+      [58.0, 38.0], [204.0, 18.0], [318.0, 62.0],
+      [82.0, 108.0], [248.0, 78.0], [152.0, 28.0],
+    ];
+    const sizes   = [2.0, 1.5, 2.0, 1.5, 2.5, 1.5];
+    const opacities = [0.35, 0.22, 0.38, 0.18, 0.28, 0.22];
+    return List.generate(6, (i) => Positioned(
+      left: positions[i][0],
+      top:  positions[i][1],
+      child: Container(
+        width:  sizes[i],
+        height: sizes[i],
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: opacities[i]),
+          shape: BoxShape.circle,
+        ),
+      ),
+    ));
+  }
+}
+
+class _AuroraBlob extends StatelessWidget {
+  final double size;
+  final Color color;
+  final double opacity;
+
+  const _AuroraBlob({required this.size, required this.color, required this.opacity});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: [
+            color.withValues(alpha: opacity),
+            color.withValues(alpha: opacity * 0.35),
+            Colors.transparent,
+          ],
+          stops: const [0.0, 0.5, 1.0],
+        ),
       ),
     );
   }
 }
 
 // ─── PRESSABLE WRAPPER ───────────────────────────────────────────────────────
-/// Scale feedback au tap — wraps n'importe quel widget.
 class _PressableWrapper extends StatefulWidget {
   final Widget child;
   final VoidCallback onTap;
