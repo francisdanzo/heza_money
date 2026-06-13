@@ -143,4 +143,4 @@ final selectedMonthTransactionsProvider = StreamProvider<List<Transaction>>((ref
 });
 
 /// Provider pour le mode thème (0=light, 1=dark, 2=system)
-final themeModeProvider = StateProvider<int>((ref) => 0);
+final themeModeProvider = StateProvider<int>((ref) => 2);

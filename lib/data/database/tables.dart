@@ -48,7 +48,7 @@ class UserProfile extends Table {
   TextColumn get name => text().withLength(min: 1, max: 100)();
   RealColumn get monthlySalary => real().withDefault(const Constant(700000.0))();
   TextColumn get currency => text().withDefault(const Constant('BIF'))();
-  IntColumn get themeMode => integer().withDefault(const Constant(0))();
+  IntColumn get themeMode => integer().withDefault(const Constant(2))();
   BoolColumn get notificationsEnabled => boolean().withDefault(const Constant(true))();
 }
 

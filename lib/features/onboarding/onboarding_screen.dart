@@ -50,7 +50,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           name:          Value(name),
           monthlySalary: Value(salary),
           currency:      Value(_currency),
-          themeMode:     const Value(0),
+          themeMode:     const Value(2),
         ),
       );
       if (mounted) context.go('/');

@@ -33,7 +33,17 @@ class HezaMoneyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Écoute le mode thème depuis le profil utilisateur
+    // Synchronise le thème avec la valeur sauvegardée dans le profil DB.
+    // Déclenche aussi au 1er chargement pour récupérer la préférence persistée.
+    ref.listen(userProfileProvider, (_, next) {
+      next.whenData((profile) {
+        if (profile != null) {
+          ref.read(themeModeProvider.notifier).state = profile.themeMode;
+        }
+      });
+    });
+
+    // Écoute le mode thème (mis à jour par le listener ci-dessus ou le profil)
     final themeMode = ref.watch(themeModeProvider);
 
     // Convertit l'entier en ThemeMode Flutter
